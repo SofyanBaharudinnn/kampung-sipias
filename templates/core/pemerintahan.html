@@ -38,6 +38,14 @@
       padding: 24px 0 !important;
       text-align: left !important;
     }
+    .org-diagram-header,
+    .org-diagram-header *,
+    .mobile-scroll-hint {
+      text-align: center !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      justify-content: center !important;
+    }
     .org-tree {
       padding: 24px 90px !important;
     }
@@ -214,13 +222,13 @@
 
     <!-- DIAGRAM SKEMA ORG CHART PRESISI -->
     <div class="org-diagram-card">
-      <div style="text-align: center; margin-bottom: 24px;">
-        <span class="badge badge-primary"><i class="bi bi-diagram-3"></i> Bagan Struktur Resmi</span>
-        <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-top: 8px;">
+      <div class="org-diagram-header" style="text-align: center; margin-bottom: 24px; padding: 0 16px;">
+        <span class="badge badge-primary" style="margin: 0 auto;"><i class="bi bi-diagram-3"></i> Bagan Struktur Resmi</span>
+        <h2 class="section-title" style="font-size: clamp(1.4rem, 4vw, 1.8rem); font-weight: 800; color: var(--text-dark); margin-top: 8px; text-align: center;">
           Bagan Hirarki Perangkat Kampung Sipias
         </h2>
-        <div style="margin-top: 12px;">
-          <span class="mobile-scroll-hint"><i class="bi bi-arrows-left-right"></i> Geser ke samping untuk melihat bagan lengkap</span>
+        <div style="margin-top: 12px; text-align: center;">
+          <span class="mobile-scroll-hint" style="margin: 0 auto;"><i class="bi bi-arrows-left-right"></i> Geser ke samping untuk melihat bagan lengkap</span>
         </div>
       </div>
 
