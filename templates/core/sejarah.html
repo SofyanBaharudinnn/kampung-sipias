@@ -20,17 +20,15 @@
   <div class="container" style="max-width: 960px;">
 
     <!-- Card Sejarah Utama -->
-    <div class="card" style="padding: 44px; margin-bottom: 36px;">
-      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
-        <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--primary-pale); border: 1px solid var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+    <div class="card sejarah-card" style="padding: 40px 32px; margin-bottom: 36px;">
+      <div class="sejarah-header-content" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; margin-bottom: 24px;">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary-pale); border: 1px solid var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; margin-bottom: 4px;">
           <i class="bi bi-hourglass-split"></i>
         </div>
-        <div>
-          <span class="badge badge-accent">Asal-usul & Perkembangan</span>
-          <h2 class="section-title" style="font-size: 1.8rem; margin-top: 4px;">Kisah & Perjalanan Kampung</h2>
-        </div>
+        <span class="badge badge-accent" style="margin: 0 auto;"><i class="bi bi-journal-text"></i> Asal-usul & Perkembangan</span>
+        <h2 class="section-title" style="font-size: clamp(1.5rem, 4vw, 2.1rem); margin-top: 2px; text-align: center;">Kisah & Perjalanan Kampung</h2>
+        <div class="divider-center" style="margin: 8px auto 0;"></div>
       </div>
-      <div class="divider-left" style="margin-bottom: 28px;"></div>
 
       <div class="prose" style="font-size: 1.05rem; color: var(--text-dark);">
         {% if profil.sejarah %}
