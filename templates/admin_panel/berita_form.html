@@ -1,0 +1,122 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block title %}{{ action }} Berita — Admin{% endblock %}
+{% block page_title %}{{ action }} Berita{% endblock %}
+{% block breadcrumb %}Admin / <a href="{% url 'admin_panel:admin_berita_list' %}" style="color:inherit;">Berita</a> / {{ action }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .ck-editor__editable { min-height: 350px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="grid-form-sidebar">
+
+    <!-- MAIN FORM -->
+    <div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><span class="card-title">✍️ Konten Berita</span></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Judul Berita <span style="color:#ef4444">*</span></label>
+            <input type="text" name="judul" class="form-control" placeholder="Masukkan judul berita yang menarik..." value="{{ berita.judul|default:'' }}" required style="font-size:1.05rem;font-weight:600;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ringkasan / Excerpt</label>
+            <textarea name="ringkasan" class="form-control" rows="3" placeholder="Ringkasan singkat (maks. 500 karakter) untuk tampil di daftar berita...">{{ berita.ringkasan|default:'' }}</textarea>
+            <p class="form-hint">Jika kosong, akan diambil dari awal konten berita.</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Konten Berita <span style="color:#ef4444">*</span></label>
+            <textarea name="konten" id="konten" class="form-control" rows="15" placeholder="Tulis isi berita di sini...">{{ berita.konten|default:'' }}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR OPTIONS -->
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><span class="card-title"><i class="bi bi-sliders"></i> Pengaturan Publikasi</span></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-control">
+              <option value="published" {% if not berita or berita.status == 'published' %}selected{% endif %}>Publikasikan (Terlihat Publik)</option>
+              <option value="draft" {% if berita.status == 'draft' %}selected{% endif %}>Draft (Simpan Sementara)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jenis</label>
+            <select name="jenis" class="form-control">
+              <option value="berita" {% if not berita or berita.jenis == 'berita' %}selected{% endif %}>Berita</option>
+              <option value="pengumuman" {% if berita.jenis == 'pengumuman' %}selected{% endif %}>Pengumuman</option>
+              <option value="kegiatan" {% if berita.jenis == 'kegiatan' %}selected{% endif %}>Kegiatan</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Penulis</label>
+            <input type="text" name="penulis" class="form-control" value="{{ berita.penulis|default:'Admin Kampung Sipias' }}">
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><span class="card-title">🖼️ Gambar Utama</span></div>
+        <div class="card-body">
+          {% if berita and berita.gambar %}
+          <div style="margin-bottom:12px;border-radius:8px;overflow:hidden;">
+            <img src="{{ berita.gambar.url }}" alt="Gambar berita" style="width:100%;height:150px;object-fit:cover;">
+          </div>
+          <p style="font-size:0.78rem;color:#6B7280;margin-bottom:10px;">Gambar saat ini. Upload baru untuk mengganti.</p>
+          {% endif %}
+          <input type="file" name="gambar" class="form-control" accept="image/*" style="padding:8px;">
+          <p class="form-hint">Format: JPG, PNG, WebP. Maks. 5MB. Rasio ideal 16:9.</p>
+        </div>
+      </div>
+
+      <!-- FOTO TAMBAHAN / GALERI -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><span class="card-title">📸 Foto Tambahan / Galeri</span></div>
+        <div class="card-body">
+
+          {% if foto_tambahan_list %}
+          <p style="font-size:0.78rem;font-weight:600;color:#374151;margin-bottom:8px;">Foto yang sudah ada ({{ foto_tambahan_list|length }} foto):</p>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;">
+            {% for f in foto_tambahan_list %}
+            <div style="position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:#f3f4f6;border:1px solid #e5e7eb;">
+              <img src="{{ f.foto.url }}" alt="{{ f.keterangan|default:'Foto' }}" style="width:100%;height:100%;object-fit:cover;">
+              <form method="post" action="{% url 'admin_panel:admin_berita_foto_hapus' f.pk %}" style="position:absolute;top:4px;right:4px;" onsubmit="return confirm('Hapus foto ini?');">
+                {% csrf_token %}
+                <button type="submit" style="background:rgba(239,68,68,0.9);border:none;border-radius:50%;width:24px;height:24px;color:#fff;font-size:0.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);" title="Hapus foto">✕</button>
+              </form>
+              {% if f.keterangan %}
+              <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:0.65rem;padding:3px 6px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">{{ f.keterangan }}</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <label class="form-label">Upload Foto Baru <span style="font-weight:400;color:#6B7280;">(pilih banyak sekaligus)</span></label>
+          <input type="file" name="foto_tambahan" class="form-control" accept="image/*" multiple style="padding:8px;">
+          <p class="form-hint">Pilih beberapa foto sekaligus. Format: JPG, PNG, WebP.</p>
+        </div>
+      </div>
+
+      <div class="form-actions" style="flex-direction:column;gap:10px;padding:0;border:none;margin:0;">
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;">
+          <i class="bi bi-floppy-fill"></i> Simpan Berita
+        </button>
+        <a href="{% url 'admin_panel:admin_berita_list' %}" class="btn btn-outline" style="width:100%;justify-content:center;">
+          ← Batal
+        </a>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+

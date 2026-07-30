@@ -1,0 +1,61 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Edit Foto Galeri — Admin{% endblock %}
+{% block page_title %}Edit Foto Galeri{% endblock %}
+{% block breadcrumb %}Admin / <a href="{% url 'admin_panel:admin_galeri_list' %}" style="color:inherit;">Galeri</a> / Edit{% endblock %}
+
+{% block content %}
+<div style="max-width:650px;">
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i class="bi bi-pencil-square"></i> Edit Informasi Foto</span></div>
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Preview Foto Saat Ini -->
+        <div class="form-group" style="margin-bottom:20px;">
+          <label class="form-label">Foto Saat Ini</label>
+          <div style="width:100%; max-height:260px; overflow:hidden; border-radius:12px; border:1px solid var(--border); background:#f8fafc; display:flex; align-items:center; justify-content:center;">
+            <img src="{{ foto.foto.url }}" alt="{{ foto.judul }}" style="max-width:100%; max-height:260px; object-fit:contain;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Judul Foto <span style="color:#ef4444">*</span></label>
+          <input type="text" name="judul" class="form-control" value="{{ foto.judul }}" placeholder="Contoh: Kegiatan Gotong Royong..." required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Album (Opsional)</label>
+          <select name="album" class="form-control">
+            <option value="">— Tidak ada album —</option>
+            {% for album in album_list %}
+            <option value="{{ album.id }}" {% if foto.album_id == album.id %}selected{% endif %}>{{ album.nama }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Ganti Foto (Opsional)</label>
+          <input type="file" name="foto" class="form-control" accept="image/*" style="padding:8px;">
+          <p class="form-hint">Biarkan kosong jika tidak ingin mengubah file foto.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Keterangan / Teks Deskripsi (Opsional)</label>
+          <textarea name="keterangan" class="form-control" rows="4" placeholder="Tuliskan teks keterangan detail tentang foto ini...">{{ foto.keterangan }}</textarea>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;background:#F9FAFB;border-radius:8px;margin-bottom:24px;">
+          <input type="checkbox" id="unggulan" name="unggulan" {% if foto.unggulan %}checked{% endif %} style="width:16px;height:16px;accent-color:#1B4332;">
+          <label for="unggulan" style="font-size:0.88rem;font-weight:600;cursor:pointer;"><i class="bi bi-star-fill" style="color:#EAB308;"></i> Tampilkan di Beranda (Unggulan)</label>
+        </div>
+
+        <div class="form-actions" style="padding:0;border:none;margin:0;display:flex;gap:10px;">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-floppy-fill"></i> Simpan Perubahan</button>
+          <a href="{% url 'admin_panel:admin_galeri_list' %}" class="btn btn-outline">← Batal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Detail Pesan — Admin{% endblock %}
+{% block page_title %}Detail Pesan{% endblock %}
+{% block breadcrumb %}Admin / <a href="{% url 'admin_panel:admin_pesan_list' %}" style="color:inherit;">Pesan</a> / Detail{% endblock %}
+{% block content %}
+<div style="max-width:700px;">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">💬 {{ pesan.subjek }}</span>
+      <span class="badge badge-green">✅ Dibaca</span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border);">
+        <div style="padding:16px;background:#F9FAFB;border-radius:8px;">
+          <p style="font-size:0.75rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Pengirim</p>
+          <p style="font-size:0.95rem;font-weight:700;">{{ pesan.nama }}</p>
+        </div>
+        <div style="padding:16px;background:#F9FAFB;border-radius:8px;">
+          <p style="font-size:0.75rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Email</p>
+          <p style="font-size:0.95rem;"><a href="mailto:{{ pesan.email }}" style="color:#1B4332;font-weight:600;">{{ pesan.email }}</a></p>
+        </div>
+        <div style="padding:16px;background:#F9FAFB;border-radius:8px;">
+          <p style="font-size:0.75rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Tanggal</p>
+          <p style="font-size:0.95rem;font-weight:600;">{{ pesan.tanggal|date:"d F Y, H:i" }} WIT</p>
+        </div>
+        <div style="padding:16px;background:#F9FAFB;border-radius:8px;">
+          <p style="font-size:0.75rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Subjek</p>
+          <p style="font-size:0.95rem;font-weight:600;">{{ pesan.subjek }}</p>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:0.75rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Isi Pesan</p>
+        <div style="background:#F9FAFB;border-radius:10px;padding:24px;line-height:1.8;font-size:0.95rem;border-left:4px solid #52B788;">
+          {{ pesan.pesan|linebreaks }}
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);">
+        <a href="mailto:{{ pesan.email }}?subject=Re: {{ pesan.subjek }}" class="btn btn-primary">✉️ Balas via Email</a>
+        <a href="{% url 'admin_panel:admin_pesan_list' %}" class="btn btn-outline">← Kembali</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

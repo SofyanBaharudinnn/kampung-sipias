@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sejarah Kampung — Kampung Sipias{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-content">
+    <span class="badge badge-primary"><i class="bi bi-journal-bookmark-fill"></i> Sejarah Kampung</span>
+    <h1>Sejarah Kampung Sipias</h1>
+    <p>Perjalanan dan asal-usul pembentukan Kampung Sipias di Distrik Elikobel, Merauke</p>
+    <div class="breadcrumb">
+      <a href="{% url 'core:landing' %}">Beranda</a> › Sejarah
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container" style="max-width: 960px;">
+
+    <!-- Card Sejarah Utama -->
+    <div class="card" style="padding: 44px; margin-bottom: 36px;">
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--primary-pale); border: 1px solid var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+          <i class="bi bi-hourglass-split"></i>
+        </div>
+        <div>
+          <span class="badge badge-accent">Asal-usul & Perkembangan</span>
+          <h2 class="section-title" style="font-size: 1.8rem; margin-top: 4px;">Kisah & Perjalanan Kampung</h2>
+        </div>
+      </div>
+      <div class="divider-left" style="margin-bottom: 28px;"></div>
+
+      <div class="prose" style="font-size: 1.05rem; color: var(--text-dark);">
+        {% if profil.sejarah %}
+          {{ profil.sejarah|linebreaks }}
+        {% else %}
+          <p>
+            Kampung Sipias merupakan salah satu kampung yang terletak di wilayah Distrik Elikobel, Kabupaten Merauke, Provinsi Papua Selatan. 
+            Kampung ini tumbuh dan berkembang dengan semangat kebersamaan, persatuan, dan gotong royong antar warga yang terdiri dari berbagai latar belakang budaya.
+          </p>
+          <p>
+            Seiring berjalannya waktu, Kampung Sipias terus membangun sarana dan prasarana publik, memperkuat sektor pertanian dan perkebunan lokal, serta meningkatkan kualitas pelayanan administrasi demi kesejahteraan seluruh lapisan masyarakat.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Info Kartu Tiga Serangkai (Rata Tengah Sempurna) -->
+    <div class="grid-3">
+      <div class="card card-center">
+        <div class="card-icon"><i class="bi bi-calendar-check-fill"></i></div>
+        <h4>Tahun Berdiri</h4>
+        <p>{% if profil.tahun_berdiri %}{{ profil.tahun_berdiri }}{% else %}1991{% endif %}</p>
+      </div>
+
+      <div class="card card-center">
+        <div class="card-icon"><i class="bi bi-bank2"></i></div>
+        <h4>Pemerintahan</h4>
+        <p>Perangkat Kampung Sipias</p>
+      </div>
+
+      <div class="card card-center">
+        <div class="card-icon"><i class="bi bi-people-fill"></i></div>
+        <h4>Masyarakat</h4>
+        <p>Harmonis & Gotong Royong</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

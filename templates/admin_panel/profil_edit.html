@@ -1,0 +1,162 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Edit Profil Kampung — Admin{% endblock %}
+{% block page_title %}Edit Profil Kampung{% endblock %}
+{% block breadcrumb %}Admin / Edit Profil{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="grid-2col">
+
+    <div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><span class="card-title"><i class="bi bi-person-badge-fill" style="color:var(--primary);"></i> Kepala Kampung</span></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Nama Kepala Kampung</label>
+            <input type="text" name="nama_kepala" class="form-control" value="{{ profil.nama_kepala }}" placeholder="Nama kepala kampung...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sambutan</label>
+            <textarea name="sambutan_kepala" class="form-control" rows="5" placeholder="Kata sambutan kepala kampung...">{{ profil.sambutan_kepala }}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="bi bi-person-circle"></i> Foto Kepala Kampung</label>
+            {% if profil.foto_kepala %}
+            <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:10px;background:#F8FAFB;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <img src="{{ profil.foto_kepala.url }}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);">
+                <div>
+                  <div style="font-size:0.85rem;font-weight:700;color:var(--text-dark);">Foto Kepala Aktif</div>
+                  <div style="font-size:0.75rem;color:var(--muted);">Tersimpan di sistem</div>
+                </div>
+              </div>
+              <a href="{% url 'admin_panel:admin_profil_hapus_foto' 'foto_kepala' %}" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin LANGSUNG menghapus foto kepala kampung ini?')">
+                <i class="bi bi-trash"></i> Hapus Foto
+              </a>
+            </div>
+            {% endif %}
+            <input type="file" name="foto_kepala" class="form-control" accept="image/*" style="padding:8px;">
+            <p class="form-hint">Pilih file baru jika ingin mengganti / edit foto kepala kampung.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><span class="card-title"><i class="bi bi-journal-text" style="color:var(--primary);"></i> Sejarah Kampung</span></div>
+        <div class="card-body">
+          <textarea name="sejarah" class="form-control" rows="8" placeholder="Ceritakan sejarah singkat Kampung Sipias...">{{ profil.sejarah }}</textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title"><i class="bi bi-bullseye" style="color:var(--primary);"></i> Visi & Misi</span></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Visi</label>
+            <textarea name="visi" class="form-control" rows="3" placeholder="Visi kampung...">{{ profil.visi }}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Misi</label>
+            <textarea name="misi" class="form-control" rows="5" placeholder="Misi kampung (satu per baris)...">{{ profil.misi }}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><span class="card-title"><i class="bi bi-bar-chart-line-fill" style="color:var(--primary);"></i> Data Kampung</span></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Jumlah Penduduk</label>
+              <input type="number" name="jumlah_penduduk" class="form-control" value="{{ profil.jumlah_penduduk }}" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Jumlah KK</label>
+              <input type="number" name="jumlah_kk" class="form-control" value="{{ profil.jumlah_kk }}" placeholder="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Luas Wilayah</label>
+              <input type="text" name="luas_wilayah" class="form-control" value="{{ profil.luas_wilayah }}" placeholder="Contoh: 125 km²">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tahun Berdiri</label>
+              <input type="text" name="tahun_berdiri" class="form-control" value="{{ profil.tahun_berdiri }}" placeholder="Contoh: 1985">
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+
+
+
+
+      <!-- FOTO KANTOR KAMPUNG -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+          <span class="card-title"><i class="bi bi-building" style="color:var(--primary);"></i> Foto Kantor Kampung</span>
+          {% if profil.foto_kantor %}
+          <a href="{% url 'admin_panel:admin_profil_hapus_foto' 'foto_kantor' %}" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin LANGSUNG menghapus foto kantor kampung ini?')">
+            <i class="bi bi-trash-fill"></i> Hapus Foto Kantor
+          </a>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            {% if profil.foto_kantor %}
+            <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:14px;position:relative;">
+              <img src="{{ profil.foto_kantor.url }}" style="width:100%;height:180px;object-fit:cover;display:block;">
+              <div style="padding:10px 14px;background:#F8FAFB;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:0.8rem;color:var(--text-dark);font-weight:600;"><i class="bi bi-image"></i> Foto Kantor Aktif</span>
+                <a href="{% url 'admin_panel:admin_profil_hapus_foto' 'foto_kantor' %}" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin LANGSUNG menghapus foto kantor kampung ini?')">
+                  <i class="bi bi-trash-fill"></i> Hapus Foto Ini
+                </a>
+              </div>
+            </div>
+            {% endif %}
+            <label class="form-label"><i class="bi bi-cloud-upload"></i> Unggah / Edit Foto Kantor Kampung</label>
+            <input type="file" name="foto_kantor" class="form-control" accept="image/*" style="padding:8px;">
+            <p class="form-hint">Pilih file baru jika ingin mengganti / mengedit foto kantor kampung.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><span class="card-title"><i class="bi bi-telephone-fill" style="color:var(--primary);"></i> Kontak</span></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Nomor Telepon</label>
+            <input type="text" name="telepon" class="form-control" value="{{ profil.telepon }}" placeholder="+62...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ profil.email }}" placeholder="kampung@gmail.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Alamat Lengkap</label>
+            <textarea name="alamat" class="form-control" rows="3" placeholder="Alamat kantor kampung...">{{ profil.alamat }}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><span class="card-title"><i class="bi bi-building" style="color:var(--primary);"></i> Foto Kantor Kampung</span></div>
+        <div class="card-body">
+          {% if profil.foto_kantor %}<img src="{{ profil.foto_kantor.url }}" style="width:100%;height:150px;object-fit:cover;border-radius:8px;margin-bottom:8px;">{% endif %}
+          <input type="file" name="foto_kantor" class="form-control" accept="image/*" style="padding:8px;">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:1rem;">
+        <i class="bi bi-floppy-fill"></i> Simpan Semua Perubahan
+      </button>
+    </div>
+
+  </div>
+</form>
+{% endblock %}

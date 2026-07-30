@@ -1,0 +1,67 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block title %}Kelola Berita — Admin{% endblock %}
+{% block page_title %}Kelola Berita{% endblock %}
+{% block breadcrumb %}Admin / Berita{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'admin_panel:admin_berita_tambah' %}" class="btn btn-primary">+ Tambah Berita</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">📰 Daftar Semua Berita</span>
+    <span style="font-size:0.85rem;color:#6B7280;">Total: {{ berita_list.count }} berita</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Judul</th>
+          <th>Jenis</th>
+          <th>Status</th>
+          <th>Penulis</th>
+          <th>Tanggal</th>
+          <th>Views</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in berita_list %}
+        <tr>
+          <td style="color:#9CA3AF;">{{ forloop.counter }}</td>
+          <td style="max-width:250px;">
+            <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ b.judul }}</div>
+            {% if b.unggulan %}<span class="badge badge-yellow" style="margin-top:4px;">⭐ Unggulan</span>{% endif %}
+          </td>
+          <td><span class="badge badge-green">{{ b.get_jenis_display }}</span></td>
+          <td>
+            {% if b.status == 'published' %}<span class="badge badge-green">✅ Publikasi</span>
+            {% else %}<span class="badge badge-gray">📝 Draft</span>{% endif %}
+          </td>
+          <td style="font-size:0.82rem;color:#6B7280;">{{ b.penulis }}</td>
+          <td style="font-size:0.82rem;color:#6B7280;white-space:nowrap;">{{ b.tanggal_publish|date:"d M Y" }}</td>
+          <td style="font-size:0.85rem;">👁 {{ b.views }}</td>
+          <td>
+            <div style="display:flex;gap:8px;">
+              <a href="{{ b.get_absolute_url }}" class="btn btn-sm btn-outline" target="_blank" title="Lihat">👁</a>
+              <a href="{% url 'admin_panel:admin_berita_edit' b.pk %}" class="btn btn-sm btn-success">✏️ Edit</a>
+              <a href="{% url 'admin_panel:admin_berita_hapus' b.pk %}" class="btn btn-sm btn-danger">🗑</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" style="text-align:center;padding:48px;color:#9CA3AF;">
+            <div style="font-size:3rem;margin-bottom:12px;">📭</div>
+            <p>Belum ada berita. <a href="{% url 'admin_panel:admin_berita_tambah' %}" style="color:#1B4332;font-weight:600;">Tulis sekarang →</a></p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

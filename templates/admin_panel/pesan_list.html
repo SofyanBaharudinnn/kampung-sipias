@@ -1,0 +1,37 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Pesan Masuk — Admin{% endblock %}
+{% block page_title %}Pesan Masuk{% endblock %}
+{% block breadcrumb %}Admin / Pesan{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">💬 Pesan dari Pengunjung</span>
+    <span style="font-size:0.85rem;color:#6B7280;">{{ pesan_list.count }} pesan</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>Nama</th><th>Email</th><th>Subjek</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr>
+      </thead>
+      <tbody>
+        {% for p in pesan_list %}
+        <tr style="{% if not p.dibaca %}background:rgba(82,183,136,0.04);{% endif %}">
+          <td style="color:#9CA3AF;">{{ forloop.counter }}</td>
+          <td style="font-weight:{% if not p.dibaca %}700{% else %}500{% endif %};">{{ p.nama }}</td>
+          <td style="font-size:0.82rem;color:#6B7280;">{{ p.email }}</td>
+          <td>{{ p.subjek|truncatewords:8 }}</td>
+          <td style="font-size:0.78rem;color:#9CA3AF;white-space:nowrap;">{{ p.tanggal|date:"d M Y, H:i" }}</td>
+          <td>
+            {% if p.dibaca %}<span class="badge badge-gray">✅ Dibaca</span>
+            {% else %}<span class="badge badge-green">🆕 Baru</span>{% endif %}
+          </td>
+          <td><a href="{% url 'admin_panel:admin_pesan_detail' p.pk %}" class="btn btn-sm btn-success">👁 Baca</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;padding:48px;color:#9CA3AF;"><div style="font-size:3rem;margin-bottom:12px;">📭</div><p>Belum ada pesan masuk</p></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

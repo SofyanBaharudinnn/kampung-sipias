@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Galeri Foto — Kampung Sipias{% endblock %}
+
+{% block extra_css %}
+<style>
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 24px;
+  }
+  .lightbox.active {
+    display: flex;
+    animation: lightboxFadeIn 0.3s ease forwards;
+  }
+
+  @keyframes lightboxFadeIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .lightbox-content-box {
+    max-width: 90vw;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .lightbox img {
+    max-width: 85vw;
+    max-height: 68vh;
+    border-radius: 16px;
+    object-fit: contain;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .lightbox-caption-card {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    padding: 16px 24px;
+    margin-top: 16px;
+    text-align: center;
+    max-width: 720px;
+    width: 100%;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+  }
+
+  .lightbox-title {
+    color: #FFFFFF;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .lightbox-desc {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.93rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+    font-size: 1.3rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10000;
+  }
+  .lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-content">
+    <span class="badge badge-accent"><i class="bi bi-camera-fill"></i> Dokumentasi</span>
+    <h1>Galeri Foto</h1>
+    <p>Dokumentasi kegiatan dan keindahan alam Kampung Sipias</p>
+    <div class="breadcrumb">
+      <a href="{% url 'core:landing' %}">Beranda</a> › Galeri
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+
+    <!-- Filter Album -->
+    {% if album_list %}
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px;">
+      <a href="{% url 'galeri:galeri' %}" class="btn btn-sm {% if not album_aktif %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-images"></i> Semua Foto
+      </a>
+      {% for album in album_list %}
+      <a href="?album={{ album.id }}" class="btn btn-sm {% if album_aktif == album.id|slugify %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-folder-fill"></i> {{ album.nama }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if foto_list %}
+    <div class="galeri-grid">
+      {% for foto in foto_list %}
+      <div class="galeri-item" onclick="openLightbox('{{ foto.foto.url }}', '{{ foto.judul|escapejs }}', '{{ foto.keterangan|escapejs }}')">
+        <img src="{{ foto.foto.url }}" alt="{{ foto.judul }}" loading="lazy">
+        <div class="galeri-item-overlay">
+          <div>
+            <span class="galeri-item-title">{{ foto.judul }}</span>
+            {% if foto.keterangan %}
+            <p style="font-size:0.82rem;color:rgba(255,255,255,0.85);margin-top:6px;line-height:1.5;">{{ foto.keterangan }}</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:80px 20px;color:var(--text-muted);">
+      <div style="font-size:4rem;margin-bottom:16px;color:var(--text-light);"><i class="bi bi-camera"></i></div>
+      <h3 style="color:var(--text-muted);">Belum ada foto</h3>
+      <p style="margin-top:8px;">Foto akan segera ditambahkan.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Lightbox Modal -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <div class="lightbox-content-box">
+    <img id="lightboxImg" src="" alt="">
+    <div class="lightbox-caption-card" id="lightboxCaptionCard">
+      <div class="lightbox-title" id="lightboxTitle"></div>
+      <p class="lightbox-desc" id="lightboxDesc"></p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function openLightbox(src, title, desc) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxTitle').textContent = title || '';
+    
+    const descEl = document.getElementById('lightboxDesc');
+    if (desc && desc.trim() !== '') {
+      descEl.textContent = desc;
+      descEl.style.display = 'block';
+    } else {
+      descEl.style.display = 'none';
+    }
+    
+    document.getElementById('lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox(event) {
+    if (!event || event.target === document.getElementById('lightbox') || event.target.classList.contains('lightbox-close')) {
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+
+  document.addEventListener('keydown', (e) => { 
+    if (e.key === 'Escape') closeLightbox(); 
+  });
+</script>
+{% endblock %}

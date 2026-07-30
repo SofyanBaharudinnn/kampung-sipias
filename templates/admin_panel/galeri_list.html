@@ -1,0 +1,43 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Galeri — Admin{% endblock %}
+{% block page_title %}Kelola Galeri{% endblock %}
+{% block breadcrumb %}Admin / Galeri{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'admin_panel:admin_galeri_upload' %}" class="btn btn-primary">+ Upload Foto</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title"><i class="bi bi-images"></i> Foto Galeri</span>
+    <span style="font-size:0.85rem;color:#6B7280;">{{ foto_list.count }} foto</span>
+  </div>
+  <div class="card-body">
+    {% if foto_list %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+      {% for foto in foto_list %}
+      <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#fff;box-shadow:var(--shadow);">
+        <div style="height:150px;overflow:hidden;">
+          <img src="{{ foto.foto.url }}" alt="{{ foto.judul }}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+        </div>
+        <div style="padding:12px;">
+          <p style="font-size:0.85rem;font-weight:600;color:#1A2332;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ foto.judul }}</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+            {% if foto.unggulan %}<span class="badge badge-yellow" style="font-size:0.75rem;"><i class="bi bi-star-fill" style="color:#EAB308;"></i> Unggulan</span>{% else %}<span></span>{% endif %}
+            <div style="display:flex;gap:6px;">
+              <a href="{% url 'admin_panel:admin_galeri_edit' foto.pk %}" class="btn btn-sm btn-outline-primary" style="padding:4px 8px;" title="Edit Foto & Keterangan"><i class="bi bi-pencil-square"></i> Edit</a>
+              <a href="{% url 'admin_panel:admin_galeri_hapus' foto.pk %}" class="btn btn-sm btn-danger" style="padding:4px 8px;" title="Hapus Foto"><i class="bi bi-trash"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:60px;color:#9CA3AF;">
+      <div style="font-size:4rem;margin-bottom:12px;">📷</div>
+      <p>Belum ada foto. <a href="{% url 'admin_panel:admin_galeri_upload' %}" style="color:#1B4332;font-weight:600;">Upload sekarang →</a></p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

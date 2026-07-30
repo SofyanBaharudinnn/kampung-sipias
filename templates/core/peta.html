@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Peta Wilayah — Kampung Sipias{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-content">
+    <span class="badge badge-primary"><i class="bi bi-geo-alt-fill"></i> Peta Wilayah</span>
+    <h1>Peta Wilayah Kampung Sipias</h1>
+    <p>Lokasi geografis dan pemetaan wilayah Kampung Sipias, Distrik Elikobel, Merauke</p>
+    <div class="breadcrumb">
+      <a href="{% url 'core:landing' %}">Beranda</a> › Peta Wilayah
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+
+    <!-- Interactive Map Container -->
+    <div class="card" style="padding: 24px; margin-bottom: 40px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <span class="badge badge-accent"><i class="bi bi-pin-map-fill"></i> Google Maps</span>
+          <h2 class="section-title" style="font-size: 1.6rem; margin-top: 4px;">Peta Interaktif Kampung Sipias</h2>
+        </div>
+        <a href="https://maps.google.com/?q=Sipias,+Elikobel,+Merauke,+Papua+Selatan" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline">
+          <i class="bi bi-box-arrow-up-right"></i> Buka di Google Maps
+        </a>
+      </div>
+
+      <div style="border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+        {% if profil and profil.peta_iframe %}
+          <div style="width: 100%; height: 500px;">
+            {{ profil.peta_iframe|safe }}
+          </div>
+        {% else %}
+          <iframe 
+            src="https://maps.google.com/maps?q=Sipias,+Distrik+Elikobel,+Kabupaten+Merauke,+Papua+Selatan&t=&z=12&ie=UTF8&iwloc=&output=embed" 
+            width="100%" 
+            height="500" 
+            style="border:0; display:block;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Informasi Detail Geografis -->
+    <div class="grid-3">
+      <div class="card" style="padding: 28px;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary-pale); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 16px;">
+          <i class="bi bi-geo-fill"></i>
+        </div>
+        <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">Administrasi</h4>
+        <p style="font-size: 0.92rem; color: var(--text-body); line-height: 1.7;">
+          Kampung Sipias berada di bawah naungan <strong>Distrik Elikobel</strong>, Kabupaten Merauke, Provinsi Papua Selatan.
+        </p>
+      </div>
+
+      <div class="card" style="padding: 28px;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary-pale); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 16px;">
+          <i class="bi bi-arrows-fullscreen"></i>
+        </div>
+        <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">Luas Wilayah</h4>
+        <p style="font-size: 0.92rem; color: var(--text-body); line-height: 1.7;">
+          Total luas wilayah Kampung Sipias adalah <strong>{% if profil.luas_wilayah %}{{ profil.luas_wilayah }}{% else %}11,33 km²{% endif %}</strong>.
+        </p>
+      </div>
+
+      <div class="card" style="padding: 28px;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary-pale); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 16px;">
+          <i class="bi bi-compass-fill"></i>
+        </div>
+        <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">Batas Wilayah</h4>
+        <p style="font-size: 0.92rem; color: var(--text-body); line-height: 1.7;">
+          Berbatasan langsung dengan kampung-kampung tetangga di wilayah Distrik Elikobel.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

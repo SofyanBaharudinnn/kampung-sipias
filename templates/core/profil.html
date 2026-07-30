@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profil Kampung — Kampung Sipias{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-content">
+    <span class="badge badge-accent"><i class="bi bi-info-circle-fill"></i> Tentang Kami</span>
+    <h1>Profil Kampung Sipias</h1>
+    <p>Mengenal lebih dekat Kampung Sipias, Distrik Elikobel, Kabupaten Merauke</p>
+    <div class="breadcrumb">
+      <a href="{% url 'core:landing' %}">Beranda</a> › Profil Kampung
+    </div>
+  </div>
+</div>
+
+<!-- INFORMASI UMUM -->
+<section class="section">
+  <div class="container">
+    <div class="profil-grid">
+
+      <!-- SIDEBAR -->
+      <div class="profil-sidebar">
+        <div class="profil-img-wrap" style="padding: 0; overflow: hidden; background: transparent;">
+          <img src="{% static 'images/foto_udara_kampung.jpg' %}" 
+               alt="Foto Udara Kampung Sipias" 
+               style="width:100%; height:280px; object-fit:cover; border-radius:14px; display:block;">
+        </div>
+        <div class="info-card">
+          <p style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">Informasi Kampung</p>
+          <div class="info-row">
+            <span class="info-label">Nama</span>
+            <span class="info-value">{{ profil.nama_kampung }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Distrik</span>
+            <span class="info-value">{{ profil.distrik }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Kabupaten</span>
+            <span class="info-value">{{ profil.kabupaten }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Provinsi</span>
+            <span class="info-value">{{ profil.provinsi }}</span>
+          </div>
+          {% if profil.luas_wilayah %}
+          <div class="info-row">
+            <span class="info-label">Luas Wilayah</span>
+            <span class="info-value">{{ profil.luas_wilayah }}</span>
+          </div>
+          {% endif %}
+          {% if profil.jumlah_penduduk %}
+          <div class="info-row">
+            <span class="info-label">Penduduk</span>
+            <span class="info-value">{{ profil.jumlah_penduduk }} jiwa</span>
+          </div>
+          {% endif %}
+          {% if profil.jumlah_kk %}
+          <div class="info-row">
+            <span class="info-label">Jumlah KK</span>
+            <span class="info-value">{{ profil.jumlah_kk }} KK</span>
+          </div>
+          {% endif %}
+          {% if profil.tahun_berdiri %}
+          <div class="info-row">
+            <span class="info-label">Berdiri</span>
+            <span class="info-value">{{ profil.tahun_berdiri }}</span>
+          </div>
+          {% endif %}
+          {% if profil.nama_kepala %}
+          <div class="info-row">
+            <span class="info-label">Kepala Kampung</span>
+            <span class="info-value">{{ profil.nama_kepala }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div>
+        <!-- Letak Geografis -->
+        {% if profil.letak_geografis %}
+        <div class="card" style="padding:36px;margin-bottom:28px;">
+          <span class="badge badge-accent"><i class="bi bi-geo-alt-fill"></i> Geografis</span>
+          <h2 class="section-title" style="font-size:1.6rem;">Letak Geografis</h2>
+          <div class="divider-left"></div>
+          <div class="prose" style="margin-top:24px; font-size:0.97rem; color:var(--text-dark);">
+            {{ profil.letak_geografis|linebreaks }}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Links to Dedicated Pages (3 Columns) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 28px;">
+          <div class="card" style="padding: 28px 24px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; border-radius: 20px; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+            <div>
+              <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, rgba(13, 148, 136, 0.12), rgba(82, 183, 136, 0.08)); border: 1px solid rgba(13, 148, 136, 0.2); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 16px;">
+                <i class="bi bi-journal-bookmark-fill"></i>
+              </div>
+              <h4 style="font-size: 1.15rem; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Sejarah</h4>
+              <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">Asal-usul & perjalanan Kampung Sipias</p>
+            </div>
+            <a href="{% url 'core:sejarah' %}" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 100px; padding: 10px 16px; font-weight: 700; font-size: 0.9rem;">
+              Buka Sejarah <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+
+          <div class="card" style="padding: 28px 24px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; border-radius: 20px; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+            <div>
+              <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, rgba(13, 148, 136, 0.12), rgba(82, 183, 136, 0.08)); border: 1px solid rgba(13, 148, 136, 0.2); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 16px;">
+                <i class="bi bi-bullseye"></i>
+              </div>
+              <h4 style="font-size: 1.15rem; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Visi & Misi</h4>
+              <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">Cita-cita & langkah pembangunan</p>
+            </div>
+            <a href="{% url 'core:visi_misi' %}" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 100px; padding: 10px 16px; font-weight: 700; font-size: 0.9rem;">
+              Buka Visi Misi <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+
+          <div class="card" style="padding: 28px 24px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; border-radius: 20px; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+            <div>
+              <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, rgba(13, 148, 136, 0.12), rgba(82, 183, 136, 0.08)); border: 1px solid rgba(13, 148, 136, 0.2); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 16px;">
+                <i class="bi bi-geo-alt-fill"></i>
+              </div>
+              <h4 style="font-size: 1.15rem; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Peta Wilayah</h4>
+              <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">Peta interaktif & batas wilayah</p>
+            </div>
+            <a href="{% url 'core:peta' %}" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 100px; padding: 10px 16px; font-weight: 700; font-size: 0.9rem;">
+              Buka Peta <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Jika belum ada data -->
+        {% if not profil.sejarah and not profil.visi and not profil.letak_geografis %}
+        <div style="text-align:center;padding:80px 20px;color:var(--text-muted);">
+          <div style="font-size:4rem;margin-bottom:16px;color:var(--text-light);"><i class="bi bi-file-earmark-text"></i></div>
+          <h3 style="color:var(--text-muted);">Konten profil belum diisi</h3>
+          <p style="margin-top:8px;font-size:0.9rem;">Login ke panel admin untuk melengkapi informasi kampung.</p>
+          <a href="{% url 'admin_panel:admin_profil_edit' %}" class="btn btn-primary" style="margin-top:20px;">Edit Profil</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function toggleSejarah(forceOpen = false) {
+    const content = document.getElementById('sejarahContent');
+    const icon = document.getElementById('sejarahIcon');
+    const btnLabel = document.getElementById('sejarahBtnLabel');
+    
+    if (!content) return;
+    
+    const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+    
+    if (isOpen && !forceOpen) {
+      content.style.maxHeight = '0px';
+      content.style.opacity = '0';
+      if (icon) icon.style.transform = 'rotate(0deg)';
+      if (btnLabel) btnLabel.textContent = 'Tampilkan';
+    } else {
+      content.style.maxHeight = content.scrollHeight + 100 + 'px';
+      content.style.opacity = '1';
+      if (icon) icon.style.transform = 'rotate(180deg)';
+      if (btnLabel) btnLabel.textContent = 'Sembunyikan';
+    }
+  }
+
+  // Open automatically if #sejarah is present in URL hash
+  if (window.location.hash === '#sejarah') {
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => toggleSejarah(true), 300);
+    });
+  }
+</script>
+{% endblock %}

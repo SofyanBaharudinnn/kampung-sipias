@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Struktur Organisasi — Kampung Sipias{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ===== MATHEMATICALLY PERFECT & BALANCED ORG TREE DIAGRAM ===== */
+  .org-diagram-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 48px 32px;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+    margin-bottom: 56px;
+  }
+
+  .org-tree {
+    min-width: 1100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding: 20px 0;
+  }
+
+  /* Node Card Box */
+  .tree-box {
+    background: #FFFFFF;
+    border: 2px solid #0F172A;
+    border-radius: 6px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    transition: all 0.25s ease;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+    margin: 0 auto;
+  }
+
+  .tree-box:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 20px rgba(13, 148, 136, 0.15);
+  }
+
+  .tree-box .box-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #F8FAFC;
+    color: #0F172A;
+    padding: 6px 14px;
+    border-bottom: 2px solid #0F172A;
+    white-space: nowrap;
+  }
+
+  .tree-box .box-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #0F172A;
+    padding: 10px 14px;
+    background: #FFFFFF;
+    white-space: nowrap;
+  }
+
+  /* Distinct Styles */
+  .tree-box.main-head {
+    border-color: var(--primary);
+    min-width: 230px;
+  }
+  .tree-box.main-head .box-title {
+    background: var(--primary);
+    color: #FFFFFF;
+    border-bottom-color: var(--primary);
+  }
+
+  .tree-box.sec-box {
+    border-color: #0284C7;
+    min-width: 210px;
+  }
+  .tree-box.sec-box .box-title {
+    background: #0284C7;
+    color: #FFFFFF;
+    border-bottom-color: #0284C7;
+  }
+
+  .tree-box.rw-box {
+    border-color: var(--primary);
+    min-width: 180px;
+  }
+  .tree-box.rw-box .box-title {
+    background: var(--primary-pale);
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+
+  /* PERFECT CONTINUOUS CONNECTOR TREE CSS */
+  .tree-children {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    position: relative;
+    width: 100%;
+  }
+
+  .tree-node-branch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding-top: 24px;
+    flex: 1;
+  }
+
+  /* Horizontal connecting bus bar */
+  .tree-node-branch::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 2px;
+    background: #0F172A;
+    left: 0;
+    right: 0;
+  }
+
+  .tree-node-branch:first-child::before {
+    left: 50%;
+  }
+
+  .tree-node-branch:last-child::before {
+    right: 50%;
+  }
+
+  .tree-node-branch:only-child::before {
+    display: none;
+  }
+
+  /* Vertical drop stem into box */
+  .tree-node-branch::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 24px;
+    background: #0F172A;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Vertical Stem Utility */
+  .stem-v {
+    width: 2px;
+    background: #0F172A;
+    margin: 0 auto;
+    flex-shrink: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-content">
+    <span class="badge badge-accent"><i class="bi bi-diagram-3-fill"></i> Bagan Organisasi</span>
+    <h1>Struktur Organisasi Kampung Sipias</h1>
+    <p>Bagan hirarki kepemimpinan dan tata kelola Perangkat Kampung Sipias</p>
+    <div class="breadcrumb">
+      <a href="{% url 'core:landing' %}">Beranda</a> › Struktur Organisasi
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+
+    <!-- DIAGRAM SKEMA ORG CHART PRESISI -->
+    <div class="org-diagram-card">
+      <div style="text-align: center; margin-bottom: 40px;">
+        <span class="badge badge-primary"><i class="bi bi-diagram-3"></i> Bagan Struktur Resmi</span>
+        <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-top: 8px;">
+          Bagan Hirarki Perangkat Kampung Sipias
+        </h2>
+      </div>
+
+      <div class="org-tree">
+        
+        <!-- 1. KEPALA KAMPUNG -->
+        <div class="tree-box main-head">
+          <div class="box-title">KEPALA KAMPUNG</div>
+          <div class="box-name">IMAM SAPI’I</div>
+        </div>
+
+        <!-- Stem down 28px -->
+        <div class="stem-v" style="height: 28px;"></div>
+
+        <!-- 2. MID LEVEL ROW: KASI (LEFT) vs SEKRETARIS & KAUR (RIGHT) -->
+        <div class="tree-children" style="max-width: 1100px;">
+          
+          <!-- LEFT BRANCH: KASI (3 BOXES) -->
+          <div class="tree-node-branch" style="flex: 1.2;">
+            <div class="tree-children" style="gap: 20px;">
+              <div class="tree-node-branch">
+                <div class="tree-box" style="min-width: 170px;">
+                  <div class="box-title">KEPALA SEKSI PEMERINTAHAN</div>
+                  <div class="box-name">NURKHOLIS</div>
+                </div>
+              </div>
+
+              <div class="tree-node-branch">
+                <div class="tree-box" style="min-width: 170px;">
+                  <div class="box-title">KEPALA SEKSI KESEJAHTERAAN</div>
+                  <div class="box-name">MAMAD</div>
+                </div>
+              </div>
+
+              <div class="tree-node-branch">
+                <div class="tree-box" style="min-width: 170px;">
+                  <div class="box-title">KEPALA SEKSI PELAYANAN</div>
+                  <div class="box-name">ERNAWATI</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT BRANCH: SEKRETARIS & KAUR (3 BOXES) -->
+          <div class="tree-node-branch" style="flex: 1.2;">
+            <!-- Sekretaris Box -->
+            <div class="tree-box sec-box">
+              <div class="box-title">SEKRETARIS KAMPUNG</div>
+              <div class="box-name">HATTA-IBRAHIM</div>
+            </div>
+
+            <!-- Stem from Sekretaris to Kaur -->
+            <div class="stem-v" style="height: 24px;"></div>
+
+            <!-- 3 Kaur Boxes -->
+            <div class="tree-children" style="gap: 20px;">
+              <div class="tree-node-branch">
+                <div class="tree-box" style="min-width: 170px;">
+                  <div class="box-title">KAUR TU & UMUM</div>
+                  <div class="box-name">SUJIMAN</div>
+                </div>
+              </div>
+
+              <div class="tree-node-branch">
+                <div class="tree-box" style="min-width: 170px;">
+                  <div class="box-title">KAUR KEUANGAN</div>
+                  <div class="box-name">TANI PURNAMASARI</div>
+                </div>
+              </div>
+
+              <div class="tree-node-branch">
+                <div class="tree-box" style="min-width: 170px;">
+                  <div class="box-title">KAUR PERENCANAAN</div>
+                  <div class="box-name">PURWANTO</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- 3. STEM DOWN TO RW LEVEL -->
+        <div class="stem-v" style="height: 44px; margin-top: 32px;"></div>
+
+        <!-- 4. RW LEVEL & RT LEVEL -->
+        <div class="tree-children" style="max-width: 960px;">
+          
+          <!-- RW 01 BLOCK -->
+          <div class="tree-node-branch">
+            <div class="tree-box rw-box">
+              <div class="box-title">RW.01</div>
+              <div class="box-name">SYAHRUL</div>
+            </div>
+
+            <div class="stem-v" style="height: 24px;"></div>
+
+            <!-- RT 01-03 -->
+            <div class="tree-children" style="gap: 16px;">
+              <div class="tree-node-branch">
+                <div class="tree-box" style="min-width: 135px;">
+                  <div class="box-title">RT.01</div>
+                  <div class="box-name">SUPRATMIN</div>
+                </div>
+              </div>
+
+              <div class="tree-node-branch">
+                <div class="tree-box" style="min-width: 135px;">
+                  <div class="box-title">RT.02</div>
+                  <div class="box-name">HASAN ASNAWI</div>
+                </div>
+              </div>
+
+              <div class="tree-node-branch">
+                <div class="tree-box" style="min-width: 135px;">
+                  <div class="box-title">RT.03</div>
+                  <div class="box-name">KABID IRIANTO</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RW 02 BLOCK -->
+          <div class="tree-node-branch">
+            <div class="tree-box rw-box">
+              <div class="box-title">RW.02</div>
+              <div class="box-name">WAKIDI</div>
+            </div>
+
+            <div class="stem-v" style="height: 24px;"></div>
+
+            <!-- RT 04-05 -->
+            <div class="tree-children" style="gap: 16px;">
+              <div class="tree-node-branch">
+                <div class="tree-box" style="min-width: 135px;">
+                  <div class="box-title">RT.04</div>
+                  <div class="box-name">KUSNADI</div>
+                </div>
+              </div>
+
+              <div class="tree-node-branch">
+                <div class="tree-box" style="min-width: 135px;">
+                  <div class="box-title">RT.05</div>
+                  <div class="box-name">WAHKID</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DETAIL DAFTAR PERANGKAT KAMPUNG -->
+    <div class="section-header" style="text-align:center; margin-bottom: 32px;">
+      <span class="badge badge-primary"><i class="bi bi-people-fill"></i> Kartu Personel</span>
+      <h2 class="section-title">Daftar Personel Perangkat Kampung</h2>
+      <div class="divider-center"></div>
+    </div>
+
+    {% if pemerintah %}
+    <div class="org-grid" style="margin-bottom:60px;">
+      {% for p in pemerintah %}
+      <div class="org-card">
+        <div class="org-avatar">
+          {% if p.foto %}
+            <img src="{{ p.foto.url }}" alt="{{ p.nama }}">
+          {% else %}
+            <i class="bi bi-person-fill" style="color: var(--primary);"></i>
+          {% endif %}
+        </div>
+        <div class="org-name">{{ p.nama }}</div>
+        <div class="org-jabatan">{{ p.jabatan }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}

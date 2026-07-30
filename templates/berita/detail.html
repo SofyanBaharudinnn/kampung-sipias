@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ berita.judul }} — Kampung Sipias{% endblock %}
+
+{% block extra_css %}
+<style>
+  .artikel-content { line-height: 1.85; font-size: 1.02rem; color: var(--text-dark); text-align: justify; hyphens: auto; }
+  .artikel-content h2, .artikel-content h3 { font-family: 'Outfit', sans-serif; font-weight: 700; margin: 28px 0 12px; color: var(--text-dark); text-align: left; }
+  .artikel-content p { margin-bottom: 18px; color: var(--text-body); }
+  .artikel-content img { border-radius: var(--radius-md); margin: 24px 0; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+  .artikel-content ul, .artikel-content ol { padding-left: 24px; margin-bottom: 20px; }
+  .artikel-content li { margin-bottom: 8px; color: var(--text-body); }
+  .artikel-content blockquote { border-left: 4px solid var(--primary); padding: 16px 24px; background: var(--bg-subtle); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 24px 0; font-style: italic; color: var(--text-dark); text-align: left; }
+
+  /* === GALERI FOTO TAMBAHAN === */
+  .galeri-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+  }
+  @media (max-width: 600px) {
+    .galeri-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .galeri-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .galeri-item:hover { transform: scale(1.03); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+  .galeri-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .galeri-item .galeri-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0); display: flex; align-items: center; justify-content: center;
+    transition: background 0.25s;
+  }
+  .galeri-item:hover .galeri-overlay { background: rgba(0,0,0,0.35); }
+  .galeri-overlay i { color: #fff; font-size: 1.8rem; opacity: 0; transition: opacity 0.25s; }
+  .galeri-item:hover .galeri-overlay i { opacity: 1; }
+
+  /* === LIGHTBOX === */
+  #lightbox-modal {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.92); align-items: center; justify-content: center;
+    flex-direction: column; padding: 20px;
+  }
+  #lightbox-modal.open { display: flex; }
+  #lightbox-img {
+    max-width: 90vw; max-height: 80vh; border-radius: 12px;
+    object-fit: contain; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    transition: opacity 0.2s;
+  }
+  #lightbox-caption {
+    color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-top: 14px;
+    text-align: center; max-width: 600px;
+  }
+  #lightbox-counter {
+    color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 6px;
+  }
+  .lightbox-btn {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.12); border: none; border-radius: 50%;
+    width: 48px; height: 48px; color: #fff; font-size: 1.4rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(6px); transition: background 0.2s;
+  }
+  .lightbox-btn:hover { background: rgba(255,255,255,0.25); }
+  #lb-prev { left: 16px; }
+  #lb-next { right: 16px; }
+  #lb-close {
+    position: fixed; top: 16px; right: 16px;
+    background: rgba(255,255,255,0.12); border: none; border-radius: 50%;
+    width: 40px; height: 40px; color: #fff; font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(6px); transition: background 0.2s;
+  }
+  #lb-close:hover { background: rgba(239,68,68,0.7); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Header Berita (Pure White / Subpage Clean Header) -->
+<div class="page-header" style="text-align: left; padding: 48px 24px 36px;">
+  <div style="max-width: 900px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;">
+      <span class="tag tag-{{ berita.jenis }}">{{ berita.get_jenis_display }}</span>
+      <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">📅 {{ berita.tanggal_publish|date:"d F Y" }}</span>
+      <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">👁 {{ berita.views }} dibaca</span>
+    </div>
+    
+    <h1 style="font-size: clamp(1.8rem, 4vw, 2.75rem); color: var(--text-dark); font-weight: 800; line-height: 1.25; margin-bottom: 16px;">
+      {{ berita.judul }}
+    </h1>
+
+    {% if berita.ringkasan %}
+    <p style="font-size: 1.08rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px;">
+      {{ berita.ringkasan }}
+    </p>
+    {% endif %}
+
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-pale); border: 1px solid var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">✍️</div>
+      <span style="font-size: 0.88rem; color: var(--text-dark); font-weight: 600;">{{ berita.penulis }}</span>
+    </div>
+
+    <div class="breadcrumb" style="justify-content: flex-start; margin-top: 16px;">
+      <a href="{% url 'core:landing' %}">Beranda</a> ›
+      <a href="{% url 'berita:daftar' %}">Berita</a> ›
+      <span style="color: var(--text-muted);">{{ berita.judul|truncatewords:5 }}</span>
+    </div>
+  </div>
+</div>
+
+<section class="section" style="padding-top: 48px;">
+  <div class="container" style="max-width: 1100px;">
+    <div style="display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: start;">
+
+      <!-- ARTIKEL -->
+      <div>
+        {% if berita.gambar %}
+        <div style="border-radius: var(--radius-md); overflow: hidden; margin-bottom: 32px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+          <img src="{{ berita.gambar.url }}" alt="{{ berita.judul }}" style="width: 100%; max-height: 480px; object-fit: cover;">
+        </div>
+        {% endif %}
+
+        <div class="card" style="padding: 36px;">
+          <div class="artikel-content">
+            {{ berita.konten|safe }}
+          </div>
+
+          {% if foto_tambahan %}
+          <!-- GALERI FOTO TAMBAHAN -->
+          <div style="margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--border);">
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+              <i class="bi bi-images" style="color: var(--primary);"></i>
+              Galeri Foto
+              <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); background: var(--bg-subtle); padding: 2px 10px; border-radius: 100px; border: 1px solid var(--border);">{{ foto_tambahan|length }} foto</span>
+            </h4>
+            <div class="galeri-grid">
+              {% for f in foto_tambahan %}
+              <div class="galeri-item" onclick="openLightbox({{ forloop.counter0 }})" data-src="{{ f.foto.url }}" data-caption="{{ f.keterangan }}">
+                <img src="{{ f.foto.url }}" alt="{{ f.keterangan|default:berita.judul }}" loading="lazy">
+                <div class="galeri-overlay">
+                  <i class="bi bi-zoom-in"></i>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
+              📅 Dipublikasikan: {{ berita.tanggal_publish|date:"d F Y, H:i" }} WIT
+            </div>
+            <a href="{% url 'berita:daftar' %}" class="btn btn-primary btn-sm">← Kembali ke Daftar Berita</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div style="position: sticky; top: 96px;">
+        {% if berita_terkait %}
+        <div class="card" style="padding: 24px;">
+          <h4 style="font-size: 1.1rem; margin-bottom: 20px; color: var(--text-dark); font-weight: 800;">Berita Terkait</h4>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            {% for terkait in berita_terkait %}
+            <a href="{{ terkait.get_absolute_url }}" style="display: flex; gap: 12px; align-items: flex-start; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
+              {% if terkait.gambar %}
+                <img src="{{ terkait.gambar.url }}" alt="{{ terkait.judul }}" style="width: 64px; height: 64px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; border: 1px solid var(--border);">
+              {% else %}
+                <div style="width: 64px; height: 64px; border-radius: var(--radius-sm); background: var(--bg-subtle); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; border: 1px solid var(--border);">📰</div>
+              {% endif %}
+              <div>
+                <p style="font-size: 0.88rem; font-weight: 700; color: var(--text-dark); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ terkait.judul }}</p>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">{{ terkait.tanggal_publish|date:"d M Y" }}</p>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="card" style="padding: 24px; margin-top: 20px; background: var(--primary-pale); border: 1px solid var(--primary-light);">
+          <h4 style="color: var(--primary); margin-bottom: 8px; font-weight: 800;">Kampung Sipias</h4>
+          <p style="font-size: 0.85rem; color: var(--text-body); line-height: 1.6; margin-bottom: 16px;">Distrik Elikobel · Merauke · Papua Selatan</p>
+          <a href="{% url 'core:kontak' %}" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;">Hubungi Kami</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- LIGHTBOX MODAL -->
+<div id="lightbox-modal" role="dialog" aria-modal="true" aria-label="Lightbox foto">
+  <button id="lb-close" onclick="closeLightbox()" title="Tutup (ESC)">✕</button>
+  <button class="lightbox-btn" id="lb-prev" onclick="lbNav(-1)" title="Sebelumnya">‹</button>
+  <img id="lightbox-img" src="" alt="">
+  <div id="lightbox-caption"></div>
+  <div id="lightbox-counter"></div>
+  <button class="lightbox-btn" id="lb-next" onclick="lbNav(1)" title="Berikutnya">›</button>
+</div>
+
+<script>
+  const galeriItems = document.querySelectorAll('.galeri-item');
+  const lbModal    = document.getElementById('lightbox-modal');
+  const lbImg      = document.getElementById('lightbox-img');
+  const lbCaption  = document.getElementById('lightbox-caption');
+  const lbCounter  = document.getElementById('lightbox-counter');
+  let currentIdx   = 0;
+  const total      = galeriItems.length;
+
+  function openLightbox(idx) {
+    if (total === 0) return;
+    currentIdx = idx;
+    updateLightbox();
+    lbModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lbModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function lbNav(dir) {
+    currentIdx = (currentIdx + dir + total) % total;
+    lbImg.style.opacity = '0';
+    setTimeout(() => {
+      updateLightbox();
+      lbImg.style.opacity = '1';
+    }, 150);
+  }
+
+  function updateLightbox() {
+    const item = galeriItems[currentIdx];
+    lbImg.src = item.dataset.src;
+    lbImg.alt = item.dataset.caption || '';
+    lbCaption.textContent = item.dataset.caption || '';
+    lbCounter.textContent = total > 1 ? `${currentIdx + 1} / ${total}` : '';
+    // Sembunyikan prev/next jika hanya 1 foto
+    document.getElementById('lb-prev').style.display = total > 1 ? '' : 'none';
+    document.getElementById('lb-next').style.display = total > 1 ? '' : 'none';
+  }
+
+  // Tutup klik backdrop
+  lbModal.addEventListener('click', (e) => { if (e.target === lbModal) closeLightbox(); });
+
+  // Navigasi keyboard
+  document.addEventListener('keydown', (e) => {
+    if (!lbModal.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lbNav(-1);
+    if (e.key === 'ArrowRight') lbNav(1);
+  });
+</script>
+{% endblock %}

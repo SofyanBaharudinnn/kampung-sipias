@@ -1,0 +1,48 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block title %}Upload Foto Fasilitas — Admin{% endblock %}
+{% block page_title %}Upload Foto Fasilitas{% endblock %}
+{% block breadcrumb %}Admin / <a href="{% url 'admin_panel:admin_fasilitas_list' %}" style="color:inherit;">Foto Fasilitas</a> / Upload{% endblock %}
+
+{% block content %}
+<div style="max-width:640px;margin:0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="bi bi-cloud-upload-fill" style="color:var(--primary);"></i> Unggah Foto Fasilitas Baru</span>
+    </div>
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Kategori Fasilitas <span style="color:#ef4444">*</span></label>
+          <select name="kategori" class="form-control" required>
+            <option value="">-- Pilih Kategori --</option>
+            <option value="kesehatan">🏥 Fasilitas Kesehatan</option>
+            <option value="pendidikan">🎓 Fasilitas Pendidikan</option>
+            <option value="ibadah">🕌 Fasilitas Ibadah</option>
+            <option value="umum">🏢 Fasilitas Umum & Olahraga</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Judul / Nama Foto (Opsional)</label>
+          <input type="text" name="judul" class="form-control" placeholder="Contoh: Gedung Puskesmas Pembantu 1">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Pilih File Foto (Bisa memilih beberapa foto sekaligus) <span style="color:#ef4444">*</span></label>
+          <input type="file" name="foto" class="form-control" accept="image/*" multiple required style="padding:10px;">
+          <p class="form-hint">Format: JPG, PNG, WebP. Bisa memilih lebih dari 1 foto sekaligus untuk scroll otomatis.</p>
+        </div>
+
+        <div class="form-actions" style="margin-top:24px;">
+          <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center;padding:12px;">
+            <i class="bi bi-cloud-upload-fill"></i> Unggah Foto
+          </button>
+          <a href="{% url 'admin_panel:admin_fasilitas_list' %}" class="btn btn-outline">Batal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

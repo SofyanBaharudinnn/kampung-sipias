@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Berita & Pengumuman — Kampung Sipias{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-content">
+    <span class="badge badge-accent"><i class="bi bi-newspaper"></i> Informasi</span>
+    <h1>Berita & Pengumuman</h1>
+    <p>Kabar terkini seputar kegiatan dan informasi Kampung Sipias</p>
+    <div class="breadcrumb">
+      <a href="{% url 'core:landing' %}">Beranda</a> › Berita
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+
+    <!-- Filter -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px;align-items:center;">
+      <span style="font-size:0.88rem;font-weight:600;color:var(--text-muted);">Filter:</span>
+      <a href="{% url 'berita:daftar' %}" class="btn btn-sm {% if not jenis_aktif %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-grid-fill"></i> Semua
+      </a>
+      <a href="?jenis=berita" class="btn btn-sm {% if jenis_aktif == 'berita' %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-newspaper"></i> Berita
+      </a>
+      <a href="?jenis=pengumuman" class="btn btn-sm {% if jenis_aktif == 'pengumuman' %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-megaphone-fill"></i> Pengumuman
+      </a>
+      <a href="?jenis=kegiatan" class="btn btn-sm {% if jenis_aktif == 'kegiatan' %}btn-primary{% else %}btn-outline{% endif %}">
+        <i class="bi bi-calendar-event-fill"></i> Kegiatan
+      </a>
+    </div>
+
+    {% if berita_list %}
+    <div class="grid-3">
+      {% for b in berita_list %}
+      <article class="card berita-card">
+        {% if b.gambar %}
+          <img src="{{ b.gambar.url }}" alt="{{ b.judul }}" class="berita-card-img">
+        {% else %}
+          <div class="berita-card-img-placeholder">
+            {% if b.jenis == 'pengumuman' %}
+              <i class="bi bi-megaphone-fill" style="font-size: 2.8rem; color: #D97706;"></i>
+            {% elif b.jenis == 'kegiatan' %}
+              <i class="bi bi-calendar-event-fill" style="font-size: 2.8rem; color: #2563EB;"></i>
+            {% else %}
+              <i class="bi bi-newspaper" style="font-size: 2.8rem; color: var(--primary);"></i>
+            {% endif %}
+          </div>
+        {% endif %}
+        <div class="berita-card-body">
+          <div class="berita-card-meta">
+            <span class="tag tag-{{ b.jenis }}">{{ b.get_jenis_display }}</span>
+            <span class="berita-card-date">{{ b.tanggal_publish|date:"d M Y" }}</span>
+          </div>
+          <a href="{{ b.get_absolute_url }}">
+            <h3 class="berita-card-title">{{ b.judul }}</h3>
+          </a>
+          <p class="berita-card-excerpt">
+            {% if b.ringkasan %}{{ b.ringkasan }}{% else %}{{ b.konten|striptags|truncatewords:25 }}{% endif %}
+          </p>
+          <div class="berita-card-footer">
+            <a href="{{ b.get_absolute_url }}" class="read-more">Baca selengkapnya <i class="bi bi-arrow-right"></i></a>
+            <span style="font-size:0.78rem;color:var(--text-muted);"><i class="bi bi-eye"></i> {{ b.views }}</span>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:80px 20px;color:var(--text-muted);">
+      <div style="font-size:4rem;margin-bottom:16px;color:var(--text-light);"><i class="bi bi-inbox-fill"></i></div>
+      <h3 style="color:var(--text-muted);">Belum ada berita</h3>
+      <p style="margin-top:8px;font-size:0.9rem;">Konten akan segera tersedia.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Fasilitas Kampung — Kampung Sipias{% endblock %}
+
+{% block extra_css %}
+<style>
+  .fasilitas-card-photo-wrapper {
+    height: 185px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    background: #0A1628;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+
+  .fasilitas-slider {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  .fasilitas-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(1.05);
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+
+  .fasilitas-slide.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  .fasilitas-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .fasilitas-card-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(13, 148, 136, 0.92);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    padding: 4px 14px;
+    border-radius: 100px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 10;
+  }
+
+  .fasilitas-slider-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(6px);
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  .fasilitas-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    transition: all 0.3s ease;
+  }
+
+  .fasilitas-dot.active {
+    background: #52B788;
+    width: 18px;
+    border-radius: 100px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-content">
+    <span class="badge badge-accent"><i class="bi bi-building-fill"></i> Sarana & Prasarana</span>
+    <h1>Fasilitas Kampung Sipias</h1>
+    <p>Daftar lengkap sarana pelayanan masyarakat, sarana kesehatan, pendidikan, keagamaan, dan fasilitas umum.</p>
+    <div class="breadcrumb">
+      <a href="{% url 'core:landing' %}">Beranda</a> › <a href="{% url 'core:profil' %}">Profil</a> › Fasilitas
+    </div>
+  </div>
+</div>
+
+<!-- SECTION CONTENT -->
+<section class="section">
+  <div class="container">
+
+    <!-- OVERVIEW STATS CARDS WITH AUTO-SCROLLING PHOTO CAROUSEL -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-bottom: 48px;">
+      
+      <!-- 1. Fasilitas Kesehatan -->
+      <div style="background: var(--white); border-radius: 20px; padding: 24px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: var(--transition); display: flex; flex-direction: column;">
+        
+        <div class="fasilitas-card-photo-wrapper">
+          <div class="fasilitas-card-badge">{{ profil.fasilitas_kesehatan|default:'2' }}</div>
+          <div class="fasilitas-slider" data-auto-slide="3500">
+            {% if foto_kesehatan %}
+              {% for f in foto_kesehatan %}
+              <div class="fasilitas-slide {% if forloop.first %}active{% endif %}">
+                <img src="{{ f.foto.url }}" alt="Fasilitas Kesehatan - {{ f.judul|default:'Kampung Sipias' }}">
+              </div>
+              {% endfor %}
+            {% elif profil and profil.foto_fasilitas_kesehatan %}
+              <div class="fasilitas-slide active">
+                <img src="{{ profil.foto_fasilitas_kesehatan.url }}" alt="Fasilitas Kesehatan">
+              </div>
+            {% else %}
+              <div class="fasilitas-slide active" style="background: linear-gradient(135deg, rgba(13, 148, 136, 0.15), rgba(45, 106, 79, 0.08)); display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-hospital" style="font-size: 3.5rem; color: var(--primary); opacity: 0.85;"></i>
+              </div>
+            {% endif %}
+          </div>
+          <div class="fasilitas-slider-dots"></div>
+        </div>
+
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">Fasilitas Kesehatan</h3>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; flex: 1;">
+          Sarana pelayanan kesehatan dan Posyandu untuk mendukung kesehatan seluruh warga kampung.
+        </p>
+        <div style="padding-top: 14px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: var(--text-dark);">
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Puskesmas Pembantu (Pustu)</div>
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Posyandu Balita & Lansia</div>
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Pos Kesehatan Desa (Polindes)</div>
+        </div>
+      </div>
+
+      <!-- 2. Fasilitas Pendidikan -->
+      <div style="background: var(--white); border-radius: 20px; padding: 24px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: var(--transition); display: flex; flex-direction: column;">
+        
+        <div class="fasilitas-card-photo-wrapper">
+          <div class="fasilitas-card-badge">{{ profil.fasilitas_pendidikan|default:'4' }}</div>
+          <div class="fasilitas-slider" data-auto-slide="3800">
+            {% if foto_pendidikan %}
+              {% for f in foto_pendidikan %}
+              <div class="fasilitas-slide {% if forloop.first %}active{% endif %}">
+                <img src="{{ f.foto.url }}" alt="Fasilitas Pendidikan - {{ f.judul|default:'Kampung Sipias' }}">
+              </div>
+              {% endfor %}
+            {% elif profil and profil.foto_fasilitas_pendidikan %}
+              <div class="fasilitas-slide active">
+                <img src="{{ profil.foto_fasilitas_pendidikan.url }}" alt="Fasilitas Pendidikan">
+              </div>
+            {% else %}
+              <div class="fasilitas-slide active" style="background: linear-gradient(135deg, rgba(13, 148, 136, 0.15), rgba(45, 106, 79, 0.08)); display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-bank" style="font-size: 3.5rem; color: var(--primary); opacity: 0.85;"></i>
+              </div>
+            {% endif %}
+          </div>
+          <div class="fasilitas-slider-dots"></div>
+        </div>
+
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">Fasilitas Pendidikan</h3>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; flex: 1;">
+          Lembaga dan sarana pendidikan usia dini hingga tingkat menengah di wilayah Kampung Sipias.
+        </p>
+        <div style="padding-top: 14px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: var(--text-dark);">
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Taman Kanak-Kanak (TK)</div>
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Sekolah Dasar (SD)</div>
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Sekolah Menengah Pertama (SMP)</div>
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Sekolah Menengah Kejuruan (SMK)</div>
+        </div>
+      </div>
+
+      <!-- 3. Fasilitas Ibadah -->
+      <div style="background: var(--white); border-radius: 20px; padding: 24px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: var(--transition); display: flex; flex-direction: column;">
+        
+        <div class="fasilitas-card-photo-wrapper">
+          <div class="fasilitas-card-badge">{{ profil.fasilitas_ibadah|default:'5' }}</div>
+          <div class="fasilitas-slider" data-auto-slide="4100">
+            {% if foto_ibadah %}
+              {% for f in foto_ibadah %}
+              <div class="fasilitas-slide {% if forloop.first %}active{% endif %}">
+                <img src="{{ f.foto.url }}" alt="Fasilitas Ibadah - {{ f.judul|default:'Kampung Sipias' }}">
+              </div>
+              {% endfor %}
+            {% elif profil and profil.foto_fasilitas_ibadah %}
+              <div class="fasilitas-slide active">
+                <img src="{{ profil.foto_fasilitas_ibadah.url }}" alt="Fasilitas Ibadah">
+              </div>
+            {% else %}
+              <div class="fasilitas-slide active" style="background: linear-gradient(135deg, rgba(13, 148, 136, 0.15), rgba(45, 106, 79, 0.08)); display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-house-heart" style="font-size: 3.5rem; color: var(--primary); opacity: 0.85;"></i>
+              </div>
+            {% endif %}
+          </div>
+          <div class="fasilitas-slider-dots"></div>
+        </div>
+
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">Fasilitas Ibadah</h3>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; flex: 1;">
+          Rumah ibadah yang menjadi pusat kegiatan keagamaan dan pembinaan kerukunan umat beragama.
+        </p>
+        <div style="padding-top: 14px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: var(--text-dark);">
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Masjid</div>
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Mushola</div>
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Pura</div>
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Gereja</div>
+        </div>
+      </div>
+
+      <!-- 4. Fasilitas Umum -->
+      <div style="background: var(--white); border-radius: 20px; padding: 24px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: var(--transition); display: flex; flex-direction: column;">
+        
+        <div class="fasilitas-card-photo-wrapper">
+          <div class="fasilitas-card-badge">{{ profil.fasilitas_umum|default:'9' }}</div>
+          <div class="fasilitas-slider" data-auto-slide="4400">
+            {% if foto_umum %}
+              {% for f in foto_umum %}
+              <div class="fasilitas-slide {% if forloop.first %}active{% endif %}">
+                <img src="{{ f.foto.url }}" alt="Fasilitas Umum - {{ f.judul|default:'Kampung Sipias' }}">
+              </div>
+              {% endfor %}
+            {% elif profil and profil.foto_fasilitas_umum %}
+              <div class="fasilitas-slide active">
+                <img src="{{ profil.foto_fasilitas_umum.url }}" alt="Fasilitas Umum">
+              </div>
+            {% else %}
+              <div class="fasilitas-slide active" style="background: linear-gradient(135deg, rgba(13, 148, 136, 0.15), rgba(45, 106, 79, 0.08)); display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-building-gear" style="font-size: 3.5rem; color: var(--primary); opacity: 0.85;"></i>
+              </div>
+            {% endif %}
+          </div>
+          <div class="fasilitas-slider-dots"></div>
+        </div>
+
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">Fasilitas Umum</h3>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; flex: 1;">
+          Sarana pelayanan publik, olahraga, dan keamanan masyarakat Kampung Sipias.
+        </p>
+        <div style="padding-top: 14px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: var(--text-dark);">
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Kantor & Balai Kampung</div>
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Lapangan Sepak Bola</div>
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Lapangan Voli</div>
+          <div style="display: flex; align-items: center; gap: 8px;"><i class="bi bi-check-circle-fill" style="color: var(--primary);"></i> Pos Kamling & Kedai Kampung</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- QUICK NAV LINKS -->
+    <div style="background: var(--bg-subtle); border-radius: 20px; padding: 32px; border: 1px solid var(--border); text-align: center;">
+      <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">Eksplorasi Profil Lainnya</h3>
+      <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 24px;">Temukan informasi lengkap mengenai Sejarah, Visi Misi, dan Lokasi Geografis Kampung Sipias.</p>
+      <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+        <a href="{% url 'core:sejarah' %}" class="btn btn-outline"><i class="bi bi-journal-bookmark-fill"></i> Sejarah Kampung</a>
+        <a href="{% url 'core:visi_misi' %}" class="btn btn-outline"><i class="bi bi-bullseye"></i> Visi & Misi</a>
+        <a href="{% url 'core:peta' %}" class="btn btn-outline"><i class="bi bi-geo-alt-fill"></i> Peta Wilayah</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const sliders = document.querySelectorAll('.fasilitas-slider');
+
+    sliders.forEach(slider => {
+      const slides = slider.querySelectorAll('.fasilitas-slide');
+      const dotsContainer = slider.parentElement.querySelector('.fasilitas-slider-dots');
+      const autoInterval = parseInt(slider.getAttribute('data-auto-slide')) || 3500;
+
+      if (slides.length <= 1) {
+        if (dotsContainer) dotsContainer.style.display = 'none';
+        return;
+      }
+
+      // Create dots
+      dotsContainer.innerHTML = '';
+      slides.forEach((_, idx) => {
+        const dot = document.createElement('div');
+        dot.className = `fasilitas-dot ${idx === 0 ? 'active' : ''}`;
+        dotsContainer.appendChild(dot);
+      });
+
+      const dots = dotsContainer.querySelectorAll('.fasilitas-dot');
+      let currentIndex = 0;
+
+      function goToSlide(index) {
+        slides[currentIndex].classList.remove('active');
+        dots[currentIndex].classList.remove('active');
+
+        currentIndex = (index + slides.length) % slides.length;
+
+        slides[currentIndex].classList.add('active');
+        dots[currentIndex].classList.add('active');
+      }
+
+      let timer = setInterval(() => {
+        goToSlide(currentIndex + 1);
+      }, autoInterval);
+
+      // Pause on hover
+      const wrapper = slider.parentElement;
+      wrapper.addEventListener('mouseenter', () => clearInterval(timer));
+      wrapper.addEventListener('mouseleave', () => {
+        timer = setInterval(() => {
+          goToSlide(currentIndex + 1);
+        }, autoInterval);
+      });
+    });
+  });
+</script>
+{% endblock %}
