@@ -7,6 +7,7 @@ from django.conf.urls.static import static
 from core import views as core_views
 
 urlpatterns = [
+    path('googled34dee6d910c2bc4.html', core_views.google_verification),
     path('robots.txt', core_views.robots_txt),
     path('sitemap.xml', core_views.sitemap_xml),
     path('django-admin/', admin.site.urls),

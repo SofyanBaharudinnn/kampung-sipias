@@ -161,3 +161,9 @@ def sitemap_xml(request):
         xml.append(f'  <url><loc>{domain}{u}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
     xml.append('</urlset>')
     return HttpResponse("\n".join(xml), content_type="application/xml")
+
+
+def google_verification(request):
+    """View verifikasi kepemilikan Google Search Console"""
+    from django.http import HttpResponse
+    return HttpResponse("google-site-verification: googled34dee6d910c2bc4.html", content_type="text/html")
