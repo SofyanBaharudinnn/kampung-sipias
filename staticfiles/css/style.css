@@ -1890,7 +1890,11 @@ p {
   .section-subtitle,
   .divider,
   .divider-center,
-  .badge {
+  .badge,
+  .tree-box,
+  .tree-box *,
+  .box-title,
+  .box-name {
     text-align: center !important;
   }
   .hero-banner .hero-badge {
