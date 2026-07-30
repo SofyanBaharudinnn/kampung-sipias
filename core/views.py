@@ -124,3 +124,40 @@ def kontak(request):
         'page_title': 'Kontak',
     }
     return render(request, 'core/kontak.html', context)
+
+
+def robots_txt(request):
+    """View untuk menyajikan robots.txt bagi Googlebot"""
+    from django.http import HttpResponse
+    lines = [
+        "User-agent: *",
+        "Disallow: /admin-panel/",
+        "Disallow: /django-admin/",
+        "Allow: /",
+        "Sitemap: https://kampungsipias.pythonanywhere.com/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+def sitemap_xml(request):
+    """View untuk sitemap XML agar Google mudah mengindeks semua halaman"""
+    from django.http import HttpResponse
+    domain = "https://kampungsipias.pythonanywhere.com"
+    urls = [
+        "",
+        "/profil/",
+        "/sejarah/",
+        "/visi-misi/",
+        "/peta/",
+        "/fasilitas/",
+        "/pemerintahan/",
+        "/kontak/",
+        "/berita/",
+        "/galeri/",
+    ]
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    for u in urls:
+        xml.append(f'  <url><loc>{domain}{u}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
+    xml.append('</urlset>')
+    return HttpResponse("\n".join(xml), content_type="application/xml")
