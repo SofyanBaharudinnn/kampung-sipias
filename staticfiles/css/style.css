@@ -1909,6 +1909,9 @@ p {
   .card {
     padding: 20px 16px !important;
   }
+  .card-header-icon {
+    display: none !important;
+  }
 }
 
 /* ===== RESPONSIVE TABLE (TOUCH SCROLLABLE IN MOBILE) ===== */
