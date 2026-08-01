@@ -50,6 +50,7 @@ def process_uploaded_images(sender, instance, **kwargs):
     1. Membersihkan nama file (menghapus & dan spasi agar tidak 404 di Nginx).
     2. Auto-rotate gambar sesuai EXIF orientasi HP.
     3. Konversi HEIC/HEIF dari iPhone menjadi JPEG standar.
+    4. PENTING: Reset stream position (seek 0) agar Django menyimpan file utuh (bukan 0 byte).
     """
     if sender._meta.app_label in ['contenttypes', 'auth', 'sessions', 'admin']:
         return
@@ -58,11 +59,17 @@ def process_uploaded_images(sender, instance, **kwargs):
         if isinstance(field, ImageField):
             image_file = getattr(instance, field.name, None)
             if image_file and hasattr(image_file, 'file') and image_file.name:
+                # Reset file pointer ke posisi awal sebelum dibaca Pillow
+                try:
+                    if hasattr(image_file, 'seek'):
+                        image_file.seek(0)
+                except Exception:
+                    pass
+
                 filename = os.path.basename(image_file.name)
                 ext = os.path.splitext(filename)[1].lower()
 
                 try:
-                    image_file.open('rb')
                     img = Image.open(image_file)
 
                     # Auto rotate berdasarkan EXIF HP
@@ -77,12 +84,21 @@ def process_uploaded_images(sender, instance, **kwargs):
                             img = img.convert('RGB')
                         buffer = BytesIO()
                         img.save(buffer, format='JPEG', quality=88, optimize=True)
+                        buffer.seek(0)
                         new_name = sanitize_filename(filename, forced_ext='.jpg')
                         setattr(instance, field.name, ContentFile(buffer.getvalue(), name=new_name))
                     else:
                         new_name = sanitize_filename(filename)
                         image_file.name = new_name
+                        # Reset file pointer ke 0 agar Django menyimpan file utuh ke disk
+                        if hasattr(image_file, 'seek'):
+                            image_file.seek(0)
                 except Exception as e:
                     target_ext = '.jpg' if ext in ['.heic', '.heif'] else ext
                     new_name = sanitize_filename(filename, forced_ext=target_ext)
                     image_file.name = new_name
+                    if hasattr(image_file, 'seek'):
+                        try:
+                            image_file.seek(0)
+                        except Exception:
+                            pass
