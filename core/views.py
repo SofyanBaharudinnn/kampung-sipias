@@ -184,7 +184,7 @@ def debug_media(request):
             for f in files:
                 filepath = os.path.join(root, f)
                 rel_path = os.path.relpath(filepath, media_dir).replace('\\', '/')
-                url_path = f"/media/{rel_path}"
+                url_path = f"/uploads/{rel_path}"
                 size_kb = round(os.path.getsize(filepath) / 1024, 1)
                 output.append(f'<li><a href="{url_path}" target="_blank">{url_path}</a> ({size_kb} KB)</li>')
                 count += 1
@@ -193,4 +193,23 @@ def debug_media(request):
     output.append("</ul>")
 
     return HttpResponse("\n".join(output), content_type="text/html")
+
+
+import mimetypes
+from django.http import FileResponse, Http404
+
+def custom_media_serve(request, path):
+    """Serving media files reliably on PythonAnywhere without Nginx route blocks"""
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if not os.path.exists(file_path):
+        # Fallback: check static/images
+        fallback = os.path.join(settings.BASE_DIR, 'static', 'images', os.path.basename(path))
+        if os.path.exists(fallback):
+            file_path = fallback
+        else:
+            raise Http404("File media tidak ditemukan.")
+
+    content_type, _ = mimetypes.guess_type(file_path)
+    return FileResponse(open(file_path, 'rb'), content_type=content_type or 'image/jpeg')
+
 

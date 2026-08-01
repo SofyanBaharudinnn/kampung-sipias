@@ -18,5 +18,6 @@ urlpatterns = [
     path('galeri/', include('galeri.urls')),
     path('debug-media/', core_views.debug_media),
     path('admin-panel/', include(('core.admin_urls', 'core'), namespace='admin_panel')),
-    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': str(settings.MEDIA_ROOT)}),
+    path('uploads/<path:path>', core_views.custom_media_serve, name='custom_media_serve'),
+    re_path(r'^media/(?P<path>.*)$', core_views.custom_media_serve),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
