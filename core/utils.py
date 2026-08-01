@@ -9,6 +9,13 @@ from django.db.models import ImageField
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
+# Dynamically register pillow_heif for HEIC files
+try:
+    import pillow_heif
+    pillow_heif.register_heif_opener()
+except Exception:
+    pass
+
 
 def sanitize_filename(filename, forced_ext=None):
     """
@@ -40,8 +47,8 @@ def process_uploaded_images(sender, instance, **kwargs):
     Signal handler untuk:
     1. Membersihkan nama file (menghapus & dan spasi agar tidak 404 di Nginx).
     2. Auto-rotate gambar sesuai EXIF orientasi HP.
-    3. Konversi HEIC/HEIF dari iPhone menjadi JPEG standar (menggunakan pillow_heif).
-    4. Reset stream position (seek 0) agar Django menyimpan file utuh.
+    3. Konversi HEIC/HEIF dari iPhone dan RGBA/PNG menjadi JPEG standar.
+    4. Reset stream position (seek 0) agar simpan utuh.
     """
     if sender._meta.app_label in ['contenttypes', 'auth', 'sessions', 'admin']:
         return
@@ -50,7 +57,7 @@ def process_uploaded_images(sender, instance, **kwargs):
         if isinstance(field, ImageField):
             image_file = getattr(instance, field.name, None)
             if image_file and hasattr(image_file, 'file') and image_file.name:
-                # Reset file pointer ke posisi awal
+                # Reset stream pointer
                 try:
                     if hasattr(image_file, 'seek'):
                         image_file.seek(0)
@@ -59,33 +66,30 @@ def process_uploaded_images(sender, instance, **kwargs):
 
                 filename = os.path.basename(image_file.name)
                 ext = os.path.splitext(filename)[1].lower()
-
-                # Coba daftarkan pillow_heif secara dinamis
-                try:
-                    import pillow_heif
-                    pillow_heif.register_heif_opener()
-                except Exception:
-                    pass
+                is_heic = ext in ['.heic', '.heif']
 
                 try:
+                    # Registrasi pillow_heif jika belum
+                    try:
+                        import pillow_heif
+                        pillow_heif.register_heif_opener()
+                    except Exception:
+                        pass
+
                     img = None
-                    is_heic = ext in ['.heic', '.heif']
-
-                    # Jika file HEIC dari iPhone, baca khusus dengan pillow_heif.read_heif
                     if is_heic:
                         try:
                             import pillow_heif
                             image_file.seek(0)
-                            file_bytes = image_file.read()
-                            heif_file = pillow_heif.read_heif(file_bytes)
+                            heif_obj = pillow_heif.open_heif(image_file.read())
                             img = Image.frombytes(
-                                heif_file.mode,
-                                heif_file.size,
-                                heif_file.data,
+                                heif_obj.mode,
+                                heif_obj.size,
+                                heif_obj.data,
                                 "raw",
                             )
-                        except Exception as err:
-                            print(f"[HEIC Reader Error]: {err}")
+                        except Exception as heic_err:
+                            print(f"[HEIC Open Error]: {heic_err}")
                             if hasattr(image_file, 'seek'):
                                 image_file.seek(0)
 
@@ -94,31 +98,32 @@ def process_uploaded_images(sender, instance, **kwargs):
                             image_file.seek(0)
                         img = Image.open(image_file)
 
-                    # Auto rotate berdasarkan EXIF HP
+                    # Auto rotate EXIF orientasi HP
                     try:
                         img = ImageOps.exif_transpose(img)
                     except Exception:
                         pass
 
-                    # Konversi HEIC/HEIF atau RGBA/P/CMYK ke RGB JPG standar
-                    if is_heic or img.mode in ('RGBA', 'P', 'CMYK'):
-                        if img.mode != 'RGB':
-                            img = img.convert('RGB')
-                        buffer = BytesIO()
-                        img.save(buffer, format='JPEG', quality=88, optimize=True)
-                        buffer.seek(0)
-                        new_name = sanitize_filename(filename, forced_ext='.jpg')
-                        setattr(instance, field.name, ContentFile(buffer.getvalue(), name=new_name))
-                    else:
-                        new_name = sanitize_filename(filename)
-                        image_file.name = new_name
-                        if hasattr(image_file, 'seek'):
-                            image_file.seek(0)
+                    # Tangani transparansi RGBA/LA/P dengan latar belakang putih
+                    if img.mode in ('RGBA', 'LA', 'PA') or (img.mode == 'P' and 'transparency' in img.info):
+                        alpha = img.convert('RGBA').split()[-1]
+                        bg = Image.new('RGB', img.size, (255, 255, 255))
+                        bg.paste(img.convert('RGB'), mask=alpha)
+                        img = bg
+                    elif img.mode != 'RGB':
+                        img = img.convert('RGB')
+
+                    # Simpan sebagai JPEG berkualitas tinggi
+                    buffer = BytesIO()
+                    img.save(buffer, format='JPEG', quality=88, optimize=True)
+                    buffer.seek(0)
+
+                    new_name = sanitize_filename(filename, forced_ext='.jpg')
+                    setattr(instance, field.name, ContentFile(buffer.getvalue(), name=new_name))
 
                 except Exception as e:
-                    print(f"[Process Image Error] {filename}: {e}")
-                    target_ext = '.jpg' if ext in ['.heic', '.heif'] else ext
-                    new_name = sanitize_filename(filename, forced_ext=target_ext)
+                    print(f"[Image Conversion Exception] {filename}: {e}")
+                    new_name = sanitize_filename(filename)
                     image_file.name = new_name
                     if hasattr(image_file, 'seek'):
                         try:
