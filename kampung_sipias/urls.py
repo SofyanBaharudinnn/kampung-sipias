@@ -16,6 +16,7 @@ urlpatterns = [
     path('', include('core.urls')),
     path('berita/', include('berita.urls')),
     path('galeri/', include('galeri.urls')),
+    path('debug-media/', core_views.debug_media),
     path('admin-panel/', include(('core.admin_urls', 'core'), namespace='admin_panel')),
-    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': str(settings.MEDIA_ROOT)}),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

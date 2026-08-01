@@ -167,3 +167,30 @@ def google_verification(request):
     """View verifikasi kepemilikan Google Search Console"""
     from django.http import HttpResponse
     return HttpResponse("google-site-verification: googled34dee6d910c2bc4.html", content_type="text/html")
+
+
+def debug_media(request):
+    """View debug untuk mengecek ketersediaan folder & file media di PythonAnywhere"""
+    import os
+    from django.conf import settings
+    from django.http import HttpResponse
+
+    media_dir = str(settings.MEDIA_ROOT)
+    output = [f"<h3>MEDIA_ROOT: <code>{media_dir}</code></h3>", f"<p>Folder Exists: <b>{os.path.exists(media_dir)}</b></p>", "<hr><h4>DAFTAR FILE MEDIA SAAAT INI:</h4><ul>"]
+
+    if os.path.exists(media_dir):
+        count = 0
+        for root, dirs, files in os.walk(media_dir):
+            for f in files:
+                filepath = os.path.join(root, f)
+                rel_path = os.path.relpath(filepath, media_dir).replace('\\', '/')
+                url_path = f"/media/{rel_path}"
+                size_kb = round(os.path.getsize(filepath) / 1024, 1)
+                output.append(f'<li><a href="{url_path}" target="_blank">{url_path}</a> ({size_kb} KB)</li>')
+                count += 1
+        if count == 0:
+            output.append('<li><i>Folder media kosong. Belum ada file ter-upload di folder media server ini.</i></li>')
+    output.append("</ul>")
+
+    return HttpResponse("\n".join(output), content_type="text/html")
+
