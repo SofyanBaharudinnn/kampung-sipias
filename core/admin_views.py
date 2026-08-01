@@ -269,8 +269,16 @@ def prepare_uploaded_image(image_file):
         return ContentFile(buffer.getvalue(), name=unique_filename), None
 
     except Exception as e:
-        error_msg = f"File foto '{filename}' tidak dapat diproses ({e}). Harap upload foto berformat JPG atau PNG biasa."
-        return None, error_msg
+        print(f"[Image Process Fallback Error] {filename}: {e}")
+        try:
+            if hasattr(image_file, 'seek'):
+                image_file.seek(0)
+            target_ext = '.jpg' if ext in ['.heic', '.heif'] else ext
+            clean_filename = f"{clean_name[:35]}_{int(time.time())}_{uuid.uuid4().hex[:4]}{target_ext}"
+            image_file.name = clean_filename
+            return image_file, None
+        except Exception:
+            return None, f"File foto '{filename}' tidak dapat diproses."
 
 
 @login_required(login_url='/admin-panel/login/')
