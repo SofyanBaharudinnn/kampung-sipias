@@ -9,15 +9,6 @@ from django.db.models import ImageField
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-# Register HEIC opener for iPhone images
-HAS_HEIF = False
-try:
-    import pillow_heif
-    pillow_heif.register_heif_opener()
-    HAS_HEIF = True
-except Exception:
-    HAS_HEIF = False
-
 
 def sanitize_filename(filename, forced_ext=None):
     """
@@ -49,8 +40,8 @@ def process_uploaded_images(sender, instance, **kwargs):
     Signal handler untuk:
     1. Membersihkan nama file (menghapus & dan spasi agar tidak 404 di Nginx).
     2. Auto-rotate gambar sesuai EXIF orientasi HP.
-    3. Konversi HEIC/HEIF dari iPhone menjadi JPEG standar.
-    4. PENTING: Reset stream position (seek 0) agar Django menyimpan file utuh (bukan 0 byte).
+    3. Konversi HEIC/HEIF dari iPhone menjadi JPEG standar (menggunakan pillow_heif).
+    4. Reset stream position (seek 0) agar Django menyimpan file utuh.
     """
     if sender._meta.app_label in ['contenttypes', 'auth', 'sessions', 'admin']:
         return
@@ -59,7 +50,7 @@ def process_uploaded_images(sender, instance, **kwargs):
         if isinstance(field, ImageField):
             image_file = getattr(instance, field.name, None)
             if image_file and hasattr(image_file, 'file') and image_file.name:
-                # Reset file pointer ke posisi awal sebelum dibaca Pillow
+                # Reset file pointer ke posisi awal
                 try:
                     if hasattr(image_file, 'seek'):
                         image_file.seek(0)
@@ -69,8 +60,39 @@ def process_uploaded_images(sender, instance, **kwargs):
                 filename = os.path.basename(image_file.name)
                 ext = os.path.splitext(filename)[1].lower()
 
+                # Coba daftarkan pillow_heif secara dinamis
                 try:
-                    img = Image.open(image_file)
+                    import pillow_heif
+                    pillow_heif.register_heif_opener()
+                except Exception:
+                    pass
+
+                try:
+                    img = None
+                    is_heic = ext in ['.heic', '.heif']
+
+                    # Jika file HEIC dari iPhone, baca khusus dengan pillow_heif.read_heif
+                    if is_heic:
+                        try:
+                            import pillow_heif
+                            image_file.seek(0)
+                            file_bytes = image_file.read()
+                            heif_file = pillow_heif.read_heif(file_bytes)
+                            img = Image.frombytes(
+                                heif_file.mode,
+                                heif_file.size,
+                                heif_file.data,
+                                "raw",
+                            )
+                        except Exception as err:
+                            print(f"[HEIC Reader Error]: {err}")
+                            if hasattr(image_file, 'seek'):
+                                image_file.seek(0)
+
+                    if img is None:
+                        if hasattr(image_file, 'seek'):
+                            image_file.seek(0)
+                        img = Image.open(image_file)
 
                     # Auto rotate berdasarkan EXIF HP
                     try:
@@ -79,7 +101,7 @@ def process_uploaded_images(sender, instance, **kwargs):
                         pass
 
                     # Konversi HEIC/HEIF atau RGBA/P/CMYK ke RGB JPG standar
-                    if ext in ['.heic', '.heif'] or img.mode in ('RGBA', 'P', 'CMYK'):
+                    if is_heic or img.mode in ('RGBA', 'P', 'CMYK'):
                         if img.mode != 'RGB':
                             img = img.convert('RGB')
                         buffer = BytesIO()
@@ -90,10 +112,11 @@ def process_uploaded_images(sender, instance, **kwargs):
                     else:
                         new_name = sanitize_filename(filename)
                         image_file.name = new_name
-                        # Reset file pointer ke 0 agar Django menyimpan file utuh ke disk
                         if hasattr(image_file, 'seek'):
                             image_file.seek(0)
+
                 except Exception as e:
+                    print(f"[Process Image Error] {filename}: {e}")
                     target_ext = '.jpg' if ext in ['.heic', '.heif'] else ext
                     new_name = sanitize_filename(filename, forced_ext=target_ext)
                     image_file.name = new_name
