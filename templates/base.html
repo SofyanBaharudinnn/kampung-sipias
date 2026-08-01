@@ -10,7 +10,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="{% static 'css/style.css' %}?v=14">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230D9488'/><path d='M50 20C33.4 20 20 33.4 20 50c0 16.6 13.4 30 30 30 16.6 0 30-13.4 30-30 0-16.6-13.4-30-30-30zm0 52c-12.1 0-22-9.9-22-22s9.9-22 22-22 22 9.9 22 22-9.9 22-22 22z' fill='%23FFFFFF'/></svg>">
+  <!-- Favicon / Logo for Browsers & Search Engines (Google, Brave) -->
+  <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/favicon-192x192.png' %}">
+  <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -19,7 +24,7 @@
 <nav class="navbar {% if request.resolver_match.url_name == 'landing' %}is-landing{% endif %}" id="navbar">
   <div class="navbar-inner">
     <a href="{% url 'core:landing' %}" class="navbar-brand">
-      <div class="navbar-logo"><i class="bi bi-flower1"></i></div>
+      <div class="navbar-logo" style="background: transparent; border: none; padding: 0; width: 44px; height: 44px;"><img src="{% static 'images/logo_sipias.png' %}" alt="Logo Kampung Sipias" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));"></div>
       <div class="navbar-name">
         <span>Kampung Sipias</span>
         <span>Distrik Elikobel · Merauke · Papua Selatan</span>
