@@ -196,27 +196,49 @@ def debug_media(request):
 
 
 import mimetypes
-from django.http import FileResponse, Http404
+from django.http import HttpResponse, Http404
 
 def custom_media_serve(request, path):
-    """Serving media files reliably on PythonAnywhere with fallback to default sample image if missing"""
-    file_path = os.path.join(settings.MEDIA_ROOT, path)
-    if not os.path.exists(file_path):
-        # Fallback 1: check static/images for exact filename match
-        fallback1 = os.path.join(settings.BASE_DIR, 'static', 'images', os.path.basename(path))
-        if os.path.exists(fallback1):
-            file_path = fallback1
-        else:
-            # Fallback 2: check if any default sample image exists
-            hero_fallback = os.path.join(settings.BASE_DIR, 'static', 'images', 'gotong_royong.jpg')
-            if not os.path.exists(hero_fallback):
-                hero_fallback = os.path.join(settings.BASE_DIR, 'static', 'images', 'hero_bg_kampung.jpg')
-            if os.path.exists(hero_fallback):
-                file_path = hero_fallback
-            else:
-                raise Http404("File media tidak ditemukan.")
+    """Serving media & uploaded images reliably on PythonAnywhere uWSGI without broken images"""
+    import os
+    from django.conf import settings
 
-    content_type, _ = mimetypes.guess_type(file_path)
-    return FileResponse(open(file_path, 'rb'), content_type=content_type or 'image/jpeg')
+    clean_path = str(path).lstrip('/')
+
+    # 1. Try MEDIA_ROOT / clean_path (e.g. media/berita/foto.jpg)
+    file_path = os.path.join(settings.MEDIA_ROOT, clean_path)
+
+    # 2. Try MEDIA_ROOT / basename (e.g. media/foto.jpg)
+    if not os.path.exists(file_path):
+        file_path = os.path.join(settings.MEDIA_ROOT, os.path.basename(clean_path))
+
+    # 3. Try static/images / clean_path
+    if not os.path.exists(file_path):
+        file_path = os.path.join(settings.BASE_DIR, 'static', 'images', clean_path)
+
+    # 4. Try static/images / basename
+    if not os.path.exists(file_path):
+        file_path = os.path.join(settings.BASE_DIR, 'static', 'images', os.path.basename(clean_path))
+
+    # 5. Fallback: Return standard sample image so frontend NEVER breaks
+    if not os.path.exists(file_path):
+        for sample in ['gotong_royong.jpg', 'hero_bg_kampung.jpg', 'foto_udara_kampung.jpg']:
+            sample_path = os.path.join(settings.BASE_DIR, 'static', 'images', sample)
+            if os.path.exists(sample_path):
+                file_path = sample_path
+                break
+
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        try:
+            with open(file_path, 'rb') as f:
+                content = f.read()
+            c_type, _ = mimetypes.guess_type(file_path)
+            response = HttpResponse(content, content_type=c_type or 'image/jpeg')
+            response['Cache-Control'] = 'public, max-age=86400'
+            return response
+        except Exception as e:
+            print(f"[custom_media_serve Error]: {e}")
+
+    raise Http404("File media tidak ditemukan.")
 
 
