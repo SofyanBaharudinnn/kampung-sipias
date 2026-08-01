@@ -35,7 +35,7 @@
     <div class="sambutan-card">
       <div class="sambutan-photo">
         {% if profil.foto_kepala %}
-          <img src="{{ profil.foto_kepala.url }}" alt="{{ profil.nama_kepala }}">
+          <img src="{{ profil.foto_kepala.url }}" alt="{{ profil.nama_kepala }}" loading="lazy" decoding="async">
         {% else %}
           <i class="bi bi-person-fill" style="color: var(--primary);"></i>
         {% endif %}

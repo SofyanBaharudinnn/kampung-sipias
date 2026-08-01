@@ -1,18 +1,26 @@
 /* =============================================
-   KAMPUNG SIPIAS - MAIN JAVASCRIPT
+   KAMPUNG SIPIAS - MAIN JAVASCRIPT (PERFORMANCE OPTIMIZED)
    ============================================= */
 
-// ===== NAVBAR SCROLL EFFECT =====
+// ===== NAVBAR SCROLL EFFECT (THROTTLED WITH RAF FOR HIGH PERFORMANCE) =====
 const navbar = document.getElementById('navbar');
 if (navbar) {
+  let isTicking = false;
   const handleScroll = () => {
-    if (window.scrollY > 50) {
-      navbar.classList.add('scrolled');
-    } else {
-      navbar.classList.remove('scrolled');
+    const isScrolled = window.scrollY > 40;
+    if (navbar.classList.contains('scrolled') !== isScrolled) {
+      navbar.classList.toggle('scrolled', isScrolled);
     }
+    isTicking = false;
   };
-  window.addEventListener('scroll', handleScroll, { passive: true });
+
+  window.addEventListener('scroll', () => {
+    if (!isTicking) {
+      window.requestAnimationFrame(handleScroll);
+      isTicking = true;
+    }
+  }, { passive: true });
+
   handleScroll();
 }
 
@@ -23,9 +31,9 @@ const navMenu = document.getElementById('navMenu');
 if (navToggle && navMenu) {
   navToggle.addEventListener('click', (e) => {
     e.stopPropagation();
-    navMenu.classList.toggle('open');
+    const isOpen = navMenu.classList.toggle('open');
     const spans = navToggle.querySelectorAll('span');
-    if (navMenu.classList.contains('open')) {
+    if (isOpen) {
       spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
       spans[1].style.opacity = '0';
       spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
@@ -41,7 +49,7 @@ if (navToggle && navMenu) {
       const spans = navToggle.querySelectorAll('span');
       spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
     }
-  });
+  }, { passive: true });
 }
 
 // ===== DROPDOWN CLICK TOGGLE =====
@@ -52,7 +60,6 @@ navDropdowns.forEach(dropdown => {
     toggleBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      // Close any other open dropdowns
       navDropdowns.forEach(other => {
         if (other !== dropdown) other.classList.remove('open');
       });
@@ -68,40 +75,52 @@ document.addEventListener('click', (e) => {
       dropdown.classList.remove('open');
     }
   });
-});
+}, { passive: true });
 
 // ===== AUTO-DISMISS MESSAGES =====
 const messages = document.querySelectorAll('.message');
 messages.forEach((msg) => {
   setTimeout(() => {
-    msg.style.animation = 'slideOut 0.4s ease forwards';
-    setTimeout(() => msg.remove(), 400);
+    msg.style.animation = 'slideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+    setTimeout(() => msg.remove(), 300);
   }, 5000);
 });
 
 // Add slideOut keyframe dynamically
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-  }
-`;
-document.head.appendChild(style);
-
-// ===== COUNTER ANIMATION =====
-const animateCounter = (el, target, duration = 2000) => {
-  const start = 0;
-  const increment = target / (duration / 16);
-  let current = start;
-  const timer = setInterval(() => {
-    current += increment;
-    if (current >= target) {
-      current = target;
-      clearInterval(timer);
+if (!document.getElementById('slideOutStyle')) {
+  const style = document.createElement('style');
+  style.id = 'slideOutStyle';
+  style.textContent = `
+    @keyframes slideOut {
+      from { transform: translate3d(0, 0, 0); opacity: 1; }
+      to { transform: translate3d(100%, 0, 0); opacity: 0; }
     }
-    el.textContent = Math.floor(current).toLocaleString('id-ID');
-  }, 16);
+  `;
+  document.head.appendChild(style);
+}
+
+// ===== COUNTER ANIMATION (OPTIMIZED RAF) =====
+const animateCounter = (el, target, duration = 1500) => {
+  const start = 0;
+  const startTime = performance.now();
+  
+  const updateCounter = (currentTime) => {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out quad formula for smooth decelerating animation
+    const easeProgress = 1 - (1 - progress) * (1 - progress);
+    const current = Math.floor(start + (target - start) * easeProgress);
+    
+    el.textContent = current.toLocaleString('id-ID');
+    
+    if (progress < 1) {
+      requestAnimationFrame(updateCounter);
+    } else {
+      el.textContent = target.toLocaleString('id-ID');
+    }
+  };
+
+  requestAnimationFrame(updateCounter);
 };
 
 // Trigger counters on scroll into view
@@ -115,31 +134,41 @@ if (counterEls.length > 0) {
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.5 });
+  }, { threshold: 0.2 });
   counterEls.forEach(el => observer.observe(el));
 }
 
-// ===== SCROLL REVEAL ANIMATION =====
+// ===== HARDWARE-ACCELERATED SCROLL REVEAL =====
 const revealEls = document.querySelectorAll('.card, .stat-item, .org-card, .galeri-item, .kontak-info-item');
 if (revealEls.length > 0) {
-  const revealStyle = document.createElement('style');
-  revealStyle.textContent = `
-    .reveal-hidden { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
-    .reveal-visible { opacity: 1; transform: translateY(0); }
-  `;
-  document.head.appendChild(revealStyle);
+  if (!document.getElementById('revealStyle')) {
+    const revealStyle = document.createElement('style');
+    revealStyle.id = 'revealStyle';
+    revealStyle.textContent = `
+      .reveal-hidden { 
+        opacity: 0; 
+        transform: translate3d(0, 20px, 0); 
+        will-change: opacity, transform;
+        transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+      }
+      .reveal-visible { 
+        opacity: 1; 
+        transform: translate3d(0, 0, 0); 
+        will-change: auto;
+      }
+    `;
+    document.head.appendChild(revealStyle);
+  }
 
   const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        setTimeout(() => {
-          entry.target.classList.add('reveal-visible');
-          entry.target.classList.remove('reveal-hidden');
-        }, i * 80);
+        entry.target.classList.add('reveal-visible');
+        entry.target.classList.remove('reveal-hidden');
         revealObserver.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.1 });
+  }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
 
   revealEls.forEach(el => {
     el.classList.add('reveal-hidden');
@@ -158,20 +187,4 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-// ===== FORM VALIDATION FEEDBACK =====
-const forms = document.querySelectorAll('form');
-forms.forEach(form => {
-  form.addEventListener('submit', (e) => {
-    const btn = form.querySelector('button[type="submit"]');
-    if (btn) {
-      btn.textContent = '⏳ Memproses...';
-      btn.disabled = true;
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.textContent = btn.dataset.originalText || btn.textContent;
-      }, 5000);
-    }
-  });
-});
-
-console.log('🌿 Website Kampung Sipias loaded successfully!');
+console.log('🌿 Website Kampung Sipias (Mobile Performance Optimized) loaded!');

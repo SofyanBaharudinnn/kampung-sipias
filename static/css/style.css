@@ -1961,4 +1961,55 @@ p {
   min-width: 600px;
 }
 
+/* =============================================
+   MOBILE PERFORMANCE & HARDWARE ACCELERATION
+   ============================================= */
+html, body {
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+  text-rendering: optimizeSpeed;
+}
+
+.navbar {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+img {
+  content-visibility: auto;
+}
+
+/* Eliminate GPU blur lag on mobile devices (< 768px) */
+@media (max-width: 768px) {
+  .navbar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #FFFFFF !important;
+  }
+  .navbar.is-landing:not(.scrolled) {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+  }
+  .navbar.scrolled {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #FFFFFF !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important;
+  }
+  .navbar-menu {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #0F172A !important;
+  }
+  
+  /* Disable heavy hover transitions on mobile touch */
+  .card, .berita-card, .galeri-item, .org-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    will-change: transform, opacity;
+  }
+}
+
+
 
