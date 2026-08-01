@@ -43,7 +43,15 @@
         {% if b.gambar %}
           <img src="{{ b.gambar.url }}" alt="{{ b.judul }}" class="berita-card-img" onerror="this.onerror=null; this.src='/static/images/hero_bg_kampung.jpg';">
         {% else %}
-          <img src="{% static 'images/hero_bg_kampung.jpg' %}" alt="{{ b.judul }}" class="berita-card-img">
+          <div class="berita-card-img-placeholder">
+            {% if b.jenis == 'pengumuman' %}
+              <i class="bi bi-megaphone-fill" style="font-size: 2.8rem; color: #D97706;"></i>
+            {% elif b.jenis == 'kegiatan' %}
+              <i class="bi bi-calendar-event-fill" style="font-size: 2.8rem; color: #2563EB;"></i>
+            {% else %}
+              <i class="bi bi-newspaper" style="font-size: 2.8rem; color: var(--primary);"></i>
+            {% endif %}
+          </div>
         {% endif %}
         <div class="berita-card-body">
           <div class="berita-card-meta">
