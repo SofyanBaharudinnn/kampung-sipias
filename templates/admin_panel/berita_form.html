@@ -11,6 +11,13 @@
 {% endblock %}
 
 {% block content %}
+
+{% if berita and berita.gambar %}
+<form id="formHapusGambarUtama" method="post" action="{% url 'admin_panel:admin_berita_gambar_hapus' berita.pk %}">
+  {% csrf_token %}
+</form>
+{% endif %}
+
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
   <div class="grid-form-sidebar">
@@ -64,17 +71,33 @@
         </div>
       </div>
 
+      <!-- GAMBAR UTAMA BERITA -->
       <div class="card" style="margin-bottom:16px;">
         <div class="card-header"><span class="card-title">🖼️ Gambar Utama</span></div>
         <div class="card-body">
           {% if berita and berita.gambar %}
-          <div style="margin-bottom:12px;border-radius:8px;overflow:hidden;">
-            <img src="{{ berita.gambar.url }}" alt="Gambar berita" style="width:100%;height:150px;object-fit:cover;" onerror="this.onerror=null; this.src='/static/images/hero_bg_kampung.jpg';">
+          <div style="position:relative;margin-bottom:10px;border-radius:10px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);">
+            <img src="{{ berita.gambar.url }}" alt="Gambar berita" style="width:100%;height:160px;object-fit:cover;" onerror="this.onerror=null; this.src='/static/images/hero_bg_kampung.jpg';">
           </div>
-          <p style="font-size:0.78rem;color:#6B7280;margin-bottom:10px;">Gambar saat ini. Upload baru untuk mengganti.</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;background:#FEF2F2;padding:8px 12px;border-radius:8px;border:1px solid #FCA5A5;">
+            <span style="font-size:0.8rem;color:#991B1B;font-weight:600;"><i class="bi bi-image"></i> Gambar Aktif</span>
+            <button type="submit" form="formHapusGambarUtama" class="btn btn-sm btn-danger" style="padding:4px 10px;font-size:0.75rem;display:flex;align-items:center;gap:4px;" onclick="return confirm('Apakah Anda yakin ingin menghapus foto utama berita ini?');">
+              <i class="bi bi-trash-fill"></i> Hapus Foto Ini
+            </button>
+          </div>
+          <p style="font-size:0.78rem;color:#6B7280;margin-bottom:10px;">Upload foto baru di bawah jika ingin mengganti:</p>
           {% endif %}
-          <input type="file" name="gambar" class="form-control" accept="image/*,.heic,.heif" style="padding:8px;">
+
+          <input type="file" id="inputGambarUtama" name="gambar" class="form-control" accept="image/*,.heic,.heif" style="padding:8px;">
           <p class="form-hint">Format: JPG, PNG, WebP, HEIC. Maks. 5MB. Rasio ideal 16:9.</p>
+
+          <!-- Live Preview Foto Baru -->
+          <div id="previewGambarContainer" style="display:none;margin-top:12px;border-radius:10px;overflow:hidden;border:2px solid #10B981;background:#ECFDF5;padding:8px;">
+            <p style="font-size:0.78rem;font-weight:700;color:#047857;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+              <i class="bi bi-check-circle-fill"></i> Preview Foto Baru Dipilih:
+            </p>
+            <img id="previewGambarImg" src="" style="width:100%;max-height:180px;object-fit:cover;border-radius:6px;display:block;">
+          </div>
         </div>
       </div>
 
@@ -89,9 +112,9 @@
             {% for f in foto_tambahan_list %}
             <div style="position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:#f3f4f6;border:1px solid #e5e7eb;">
               <img src="{{ f.foto.url }}" alt="{{ f.keterangan|default:'Foto' }}" style="width:100%;height:100%;object-fit:cover;" onerror="this.onerror=null; this.src='/static/images/hero_bg_kampung.jpg';">
-              <form method="post" action="{% url 'admin_panel:admin_berita_foto_hapus' f.pk %}" style="position:absolute;top:4px;right:4px;" onsubmit="return confirm('Hapus foto ini?');">
+              <form method="post" action="{% url 'admin_panel:admin_berita_foto_hapus' f.pk %}" style="position:absolute;top:4px;right:4px;" onsubmit="return confirm('Hapus foto tambahan ini?');">
                 {% csrf_token %}
-                <button type="submit" style="background:rgba(239,68,68,0.9);border:none;border-radius:50%;width:24px;height:24px;color:#fff;font-size:0.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);" title="Hapus foto">✕</button>
+                <button type="submit" style="background:rgba(239,68,68,0.9);border:none;border-radius:50%;width:24px;height:24px;color:#fff;font-size:0.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);" title="Hapus foto ini">✕</button>
               </form>
               {% if f.keterangan %}
               <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:0.65rem;padding:3px 6px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">{{ f.keterangan }}</div>
@@ -122,6 +145,24 @@
 <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const inputGambarUtama = document.getElementById('inputGambarUtama');
+    const previewGambarContainer = document.getElementById('previewGambarContainer');
+    const previewGambarImg = document.getElementById('previewGambarImg');
+
+    if (inputGambarUtama) {
+        inputGambarUtama.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && !file.name.toLowerCase().endsWith('.heic') && !file.name.toLowerCase().endsWith('.heif')) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    previewGambarImg.src = evt.target.result;
+                    previewGambarContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
     const inputs = document.querySelectorAll('input[type="file"]');
     inputs.forEach(input => {
         input.addEventListener('change', async function(e) {
@@ -141,6 +182,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         const convertedFile = new File([resultBlob], newFileName, { type: "image/jpeg" });
                         container.items.add(convertedFile);
                         changed = true;
+
+                        if (input === inputGambarUtama) {
+                            const reader = new FileReader();
+                            reader.onload = function(evt) {
+                                previewGambarImg.src = evt.target.result;
+                                previewGambarContainer.style.display = 'block';
+                            };
+                            reader.readAsDataURL(convertedFile);
+                        }
                     } catch (err) {
                         console.error('HEIC convert error:', err);
                         container.items.add(file);
@@ -152,7 +202,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (changed) {
                 input.files = container.files;
-                alert('Foto HEIC dari iPhone telah otomatis dikonversi menjadi JPEG standar!');
             }
         });
     });

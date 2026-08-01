@@ -163,10 +163,25 @@ def admin_berita_foto_hapus(request, foto_pk):
     foto = get_object_or_404(FotoBerita, pk=foto_pk)
     berita_pk = foto.berita_id
     if request.method == 'POST':
-        foto.foto.delete(save=False)
         foto.delete()
-        messages.success(request, 'Foto berhasil dihapus.')
+        messages.success(request, 'Foto tambahan berhasil dihapus.')
     return redirect('admin_panel:admin_berita_edit', pk=berita_pk)
+
+
+@login_required(login_url='/admin-panel/login/')
+def admin_berita_gambar_hapus(request, pk):
+    """Hapus gambar utama dari berita"""
+    berita = get_object_or_404(Berita, pk=pk)
+    if request.method == 'POST':
+        if berita.gambar:
+            try:
+                berita.gambar.delete(save=False)
+            except Exception:
+                pass
+            berita.gambar = None
+            berita.save()
+            messages.success(request, f'Gambar utama berita "{berita.judul}" berhasil dihapus.')
+    return redirect('admin_panel:admin_berita_edit', pk=pk)
 
 
 # ===================== GALERI =====================

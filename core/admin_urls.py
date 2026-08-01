@@ -12,6 +12,7 @@ urlpatterns = [
     path('berita/tambah/', admin_views.admin_berita_tambah, name='admin_berita_tambah'),
     path('berita/edit/<int:pk>/', admin_views.admin_berita_edit, name='admin_berita_edit'),
     path('berita/hapus/<int:pk>/', admin_views.admin_berita_hapus, name='admin_berita_hapus'),
+    path('berita/gambar-hapus/<int:pk>/', admin_views.admin_berita_gambar_hapus, name='admin_berita_gambar_hapus'),
     path('berita/foto-hapus/<int:foto_pk>/', admin_views.admin_berita_foto_hapus, name='admin_berita_foto_hapus'),
     # Galeri
     path('galeri/', admin_views.admin_galeri_list, name='admin_galeri_list'),
