@@ -126,7 +126,7 @@
       <div>
         {% if berita.gambar %}
         <div style="border-radius: var(--radius-md); overflow: hidden; margin-bottom: 32px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-          <img src="{{ berita.gambar.url }}" alt="{{ berita.judul }}" style="width: 100%; max-height: 480px; object-fit: cover;">
+          <img src="{{ berita.gambar.url }}" alt="{{ berita.judul }}" style="width: 100%; max-height: 480px; object-fit: cover;" onerror="this.onerror=null; this.src='/static/images/hero_bg_kampung.jpg';">
         </div>
         {% endif %}
 
@@ -146,7 +146,7 @@
             <div class="galeri-grid">
               {% for f in foto_tambahan %}
               <div class="galeri-item" onclick="openLightbox({{ forloop.counter0 }})" data-src="{{ f.foto.url }}" data-caption="{{ f.keterangan }}">
-                <img src="{{ f.foto.url }}" alt="{{ f.keterangan|default:berita.judul }}" loading="lazy">
+                <img src="{{ f.foto.url }}" alt="{{ f.keterangan|default:berita.judul }}" loading="lazy" onerror="this.onerror=null; this.src='/static/images/hero_bg_kampung.jpg';">
                 <div class="galeri-overlay">
                   <i class="bi bi-zoom-in"></i>
                 </div>
@@ -174,7 +174,7 @@
             {% for terkait in berita_terkait %}
             <a href="{{ terkait.get_absolute_url }}" style="display: flex; gap: 12px; align-items: flex-start; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
               {% if terkait.gambar %}
-                <img src="{{ terkait.gambar.url }}" alt="{{ terkait.judul }}" style="width: 64px; height: 64px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; border: 1px solid var(--border);">
+                <img src="{{ terkait.gambar.url }}" alt="{{ terkait.judul }}" style="width: 64px; height: 64px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; border: 1px solid var(--border);" onerror="this.onerror=null; this.src='/static/images/hero_bg_kampung.jpg';">
               {% else %}
                 <div style="width: 64px; height: 64px; border-radius: var(--radius-sm); background: var(--bg-subtle); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; border: 1px solid var(--border);">📰</div>
               {% endif %}

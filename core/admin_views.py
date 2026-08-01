@@ -91,11 +91,15 @@ def admin_berita_tambah(request):
                 penulis=penulis, unggulan=unggulan
             )
             if gambar:
-                berita.gambar = gambar
-                berita.save()
+                proc_img, _ = prepare_uploaded_image(gambar)
+                if proc_img:
+                    berita.gambar = proc_img
+                    berita.save()
             # Simpan foto-foto tambahan
             for f in request.FILES.getlist('foto_tambahan'):
-                FotoBerita.objects.create(berita=berita, foto=f)
+                proc_f, _ = prepare_uploaded_image(f)
+                if proc_f:
+                    FotoBerita.objects.create(berita=berita, foto=proc_f)
             messages.success(request, f'Berita "{judul}" berhasil ditambahkan!')
             return redirect('admin_panel:admin_berita_list')
         else:
@@ -121,11 +125,15 @@ def admin_berita_edit(request, pk):
         berita.unggulan = True
         gambar = request.FILES.get('gambar')
         if gambar:
-            berita.gambar = gambar
+            proc_img, _ = prepare_uploaded_image(gambar)
+            if proc_img:
+                berita.gambar = proc_img
         berita.save()
         # Simpan foto-foto tambahan baru
         for f in request.FILES.getlist('foto_tambahan'):
-            FotoBerita.objects.create(berita=berita, foto=f)
+            proc_f, _ = prepare_uploaded_image(f)
+            if proc_f:
+                FotoBerita.objects.create(berita=berita, foto=proc_f)
         messages.success(request, f'Berita "{berita.judul}" berhasil diperbarui!')
         return redirect('admin_panel:admin_berita_list')
 

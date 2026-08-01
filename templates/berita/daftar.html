@@ -41,7 +41,7 @@
       {% for b in berita_list %}
       <article class="card berita-card">
         {% if b.gambar %}
-          <img src="{{ b.gambar.url }}" alt="{{ b.judul }}" class="berita-card-img">
+          <img src="{{ b.gambar.url }}" alt="{{ b.judul }}" class="berita-card-img" onerror="this.onerror=null; this.src='/static/images/hero_bg_kampung.jpg';">
         {% else %}
           <div class="berita-card-img-placeholder">
             {% if b.jenis == 'pengumuman' %}
