@@ -9,25 +9,30 @@ from django.db.models import ImageField
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
+# Register HEIC opener for iPhone images
+HAS_HEIF = False
 try:
     import pillow_heif
     pillow_heif.register_heif_opener()
-except ImportError:
-    pass
+    HAS_HEIF = True
+except Exception:
+    HAS_HEIF = False
 
 
-def sanitize_filename(filename):
+def sanitize_filename(filename, forced_ext=None):
     """
     Sanitasi nama file agar aman untuk Nginx & Web Server:
     - Menghapus karakter khusus seperti &, ?, #, %, spasi, dll.
     - Mengganti spasi & simbol dengan underscore (_)
     """
     name, ext = os.path.splitext(filename)
-    ext = ext.lower()
-    if not ext:
-        ext = '.jpg'
+    if forced_ext:
+        ext = forced_ext
+    else:
+        ext = ext.lower()
+        if not ext:
+            ext = '.jpg'
 
-    # Hapus karakter non-alphanumeric selain strip (-) dan underscore (_)
     clean_name = re.sub(r'[^a-zA-Z0-9_-]', '_', name)
     clean_name = re.sub(r'_+', '_', clean_name).strip('_')
 
@@ -44,7 +49,7 @@ def process_uploaded_images(sender, instance, **kwargs):
     Signal handler untuk:
     1. Membersihkan nama file (menghapus & dan spasi agar tidak 404 di Nginx).
     2. Auto-rotate gambar sesuai EXIF orientasi HP.
-    3. Konversi HEIC/HEIF dan RGBA jika diperlukan.
+    3. Konversi HEIC/HEIF dari iPhone menjadi JPEG standar.
     """
     if sender._meta.app_label in ['contenttypes', 'auth', 'sessions', 'admin']:
         return
@@ -66,20 +71,18 @@ def process_uploaded_images(sender, instance, **kwargs):
                     except Exception:
                         pass
 
-                    # Konversi HEIC/HEIF atau RGBA jika perlu
-                    if ext in ['.heic', '.heif'] or img.mode in ('P', 'CMYK'):
-                        if ext in ['.heic', '.heif']:
-                            ext = '.jpg'
-                        img = img.convert('RGB')
+                    # Konversi HEIC/HEIF atau RGBA/P/CMYK ke RGB JPG standar
+                    if ext in ['.heic', '.heif'] or img.mode in ('RGBA', 'P', 'CMYK'):
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
                         buffer = BytesIO()
                         img.save(buffer, format='JPEG', quality=88, optimize=True)
-                        new_name = sanitize_filename(filename)
-                        if not new_name.endswith(('.jpg', '.jpeg', '.png', '.webp')):
-                            new_name = os.path.splitext(new_name)[0] + '.jpg'
+                        new_name = sanitize_filename(filename, forced_ext='.jpg')
                         setattr(instance, field.name, ContentFile(buffer.getvalue(), name=new_name))
                     else:
                         new_name = sanitize_filename(filename)
                         image_file.name = new_name
                 except Exception as e:
-                    new_name = sanitize_filename(filename)
+                    target_ext = '.jpg' if ext in ['.heic', '.heif'] else ext
+                    new_name = sanitize_filename(filename, forced_ext=target_ext)
                     image_file.name = new_name
