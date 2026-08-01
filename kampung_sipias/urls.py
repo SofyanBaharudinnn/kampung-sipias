@@ -1,8 +1,9 @@
 """URL configuration for kampung_sipias project."""
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve
 
 from core import views as core_views
 
@@ -16,4 +17,5 @@ urlpatterns = [
     path('berita/', include('berita.urls')),
     path('galeri/', include('galeri.urls')),
     path('admin-panel/', include(('core.admin_urls', 'core'), namespace='admin_panel')),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
