@@ -126,7 +126,7 @@
       <div>
         {% if berita.gambar %}
         <div style="border-radius: var(--radius-md); overflow: hidden; margin-bottom: 32px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-          <img src="{{ berita.gambar.url }}" alt="{{ berita.judul }}" style="width: 100%; max-height: 480px; object-fit: cover;">
+          <img src="{{ berita.gambar.url }}" alt="{{ berita.judul }}" style="width: 100%; max-height: 480px; object-fit: cover;" onerror="this.parentElement.style.display='none';">
         </div>
         {% endif %}
 
