@@ -41,16 +41,7 @@
       {% for b in berita_list %}
       <article class="card berita-card">
         {% if b.gambar %}
-          <img src="{{ b.gambar.url }}" alt="{{ b.judul }}" class="berita-card-img" onerror="this.style.display='none'; document.getElementById('placeholder-{{ b.id }}').style.display='flex';">
-          <div id="placeholder-{{ b.id }}" class="berita-card-img-placeholder" style="display:none;">
-            {% if b.jenis == 'pengumuman' %}
-              <i class="bi bi-megaphone-fill" style="font-size: 2.8rem; color: #D97706;"></i>
-            {% elif b.jenis == 'kegiatan' %}
-              <i class="bi bi-calendar-event-fill" style="font-size: 2.8rem; color: #2563EB;"></i>
-            {% else %}
-              <i class="bi bi-newspaper" style="font-size: 2.8rem; color: var(--primary);"></i>
-            {% endif %}
-          </div>
+          <img src="{{ b.gambar.url }}" alt="{{ b.judul }}" class="berita-card-img">
         {% else %}
           <div class="berita-card-img-placeholder">
             {% if b.jenis == 'pengumuman' %}

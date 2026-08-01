@@ -199,15 +199,22 @@ import mimetypes
 from django.http import FileResponse, Http404
 
 def custom_media_serve(request, path):
-    """Serving media files reliably on PythonAnywhere without Nginx route blocks"""
+    """Serving media files reliably on PythonAnywhere with fallback to default sample image if missing"""
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if not os.path.exists(file_path):
-        # Fallback: check static/images
-        fallback = os.path.join(settings.BASE_DIR, 'static', 'images', os.path.basename(path))
-        if os.path.exists(fallback):
-            file_path = fallback
+        # Fallback 1: check static/images for exact filename match
+        fallback1 = os.path.join(settings.BASE_DIR, 'static', 'images', os.path.basename(path))
+        if os.path.exists(fallback1):
+            file_path = fallback1
         else:
-            raise Http404("File media tidak ditemukan.")
+            # Fallback 2: check if any default sample image exists
+            hero_fallback = os.path.join(settings.BASE_DIR, 'static', 'images', 'gotong_royong.jpg')
+            if not os.path.exists(hero_fallback):
+                hero_fallback = os.path.join(settings.BASE_DIR, 'static', 'images', 'hero_bg_kampung.jpg')
+            if os.path.exists(hero_fallback):
+                file_path = hero_fallback
+            else:
+                raise Http404("File media tidak ditemukan.")
 
     content_type, _ = mimetypes.guess_type(file_path)
     return FileResponse(open(file_path, 'rb'), content_type=content_type or 'image/jpeg')
