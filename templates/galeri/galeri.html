@@ -132,7 +132,7 @@
     <div class="galeri-grid">
       {% for foto in foto_list %}
       <div class="galeri-item" onclick="openLightbox('{{ foto.foto.url }}', '{{ foto.judul|escapejs }}', '{{ foto.keterangan|escapejs }}')">
-        <img src="{{ foto.foto.url }}" alt="{{ foto.judul }}" loading="lazy">
+        <img src="{{ foto.foto.url }}" alt="{{ foto.judul }}" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/hero_bg_kampung.jpg' %}';">
         <div class="galeri-item-overlay">
           <div>
             <span class="galeri-item-title">{{ foto.judul }}</span>

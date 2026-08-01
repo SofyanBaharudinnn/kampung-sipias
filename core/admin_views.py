@@ -163,6 +163,93 @@ def admin_berita_foto_hapus(request, foto_pk):
 
 # ===================== GALERI =====================
 
+import os
+import re
+import time
+from io import BytesIO
+from PIL import Image, ImageOps
+from django.core.files.base import ContentFile
+
+
+def prepare_uploaded_image(image_file):
+    """
+    Memproses dan mengkonversi file gambar yang diupload:
+    1. Sanitasi nama file (hapus spasi, &, simbol khusus).
+    2. Konversi format HEIC (iPhone) / RGBA / PNG ke JPEG standar RGB.
+    3. Auto-rotate EXIF HP.
+    """
+    if not image_file or not hasattr(image_file, 'name'):
+        return image_file, None
+
+    filename = os.path.basename(image_file.name)
+    name, ext = os.path.splitext(filename)
+    ext = ext.lower()
+
+    clean_name = re.sub(r'[^a-zA-Z0-9_-]', '_', name)
+    clean_name = re.sub(r'_+', '_', clean_name).strip('_')
+    if not clean_name:
+        clean_name = "foto"
+
+    unique_filename = f"{clean_name[:35]}_{int(time.time())}_{uuid.uuid4().hex[:4]}.jpg"
+
+    try:
+        import pillow_heif
+        pillow_heif.register_heif_opener()
+    except Exception:
+        pass
+
+    try:
+        if hasattr(image_file, 'seek'):
+            image_file.seek(0)
+
+        img = None
+        is_heic = ext in ['.heic', '.heif']
+
+        if is_heic:
+            try:
+                import pillow_heif
+                image_file.seek(0)
+                heif_obj = pillow_heif.open_heif(image_file.read())
+                img = Image.frombytes(
+                    heif_obj.mode,
+                    heif_obj.size,
+                    heif_obj.data,
+                    "raw",
+                )
+            except Exception as heic_err:
+                print(f"[HEIC Open Error]: {heic_err}")
+                if hasattr(image_file, 'seek'):
+                    image_file.seek(0)
+
+        if img is None:
+            if hasattr(image_file, 'seek'):
+                image_file.seek(0)
+            img = Image.open(image_file)
+
+        try:
+            img = ImageOps.exif_transpose(img)
+        except Exception:
+            pass
+
+        if img.mode in ('RGBA', 'LA', 'PA') or (img.mode == 'P' and 'transparency' in img.info):
+            alpha = img.convert('RGBA').split()[-1]
+            bg = Image.new('RGB', img.size, (255, 255, 255))
+            bg.paste(img.convert('RGB'), mask=alpha)
+            img = bg
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        buffer = BytesIO()
+        img.save(buffer, format='JPEG', quality=88, optimize=True)
+        buffer.seek(0)
+
+        return ContentFile(buffer.getvalue(), name=unique_filename), None
+
+    except Exception as e:
+        error_msg = f"File foto '{filename}' tidak dapat diproses ({e}). Harap upload foto berformat JPG atau PNG biasa."
+        return None, error_msg
+
+
 @login_required(login_url='/admin-panel/login/')
 def admin_galeri_list(request):
     foto_list = FotoGaleri.objects.all().order_by('-tanggal')
@@ -181,12 +268,17 @@ def admin_galeri_upload(request):
         keterangan = request.POST.get('keterangan', '').strip()
         album_id = request.POST.get('album', '')
         unggulan = request.POST.get('unggulan') == 'on'
-        foto = request.FILES.get('foto')
+        raw_foto = request.FILES.get('foto')
 
-        if judul and foto:
+        if judul and raw_foto:
+            processed_foto, err_msg = prepare_uploaded_image(raw_foto)
+            if err_msg:
+                messages.error(request, err_msg)
+                return render(request, 'admin_panel/galeri_upload.html', {'album_list': album_list})
+
             foto_obj = FotoGaleri.objects.create(
                 judul=judul, keterangan=keterangan,
-                foto=foto, unggulan=unggulan
+                foto=processed_foto, unggulan=unggulan
             )
             if album_id:
                 foto_obj.album_id = int(album_id)
@@ -208,7 +300,7 @@ def admin_galeri_edit(request, pk):
         keterangan = request.POST.get('keterangan', '').strip()
         album_id = request.POST.get('album', '')
         unggulan = request.POST.get('unggulan') == 'on'
-        foto_file = request.FILES.get('foto')
+        raw_foto = request.FILES.get('foto')
 
         if judul:
             foto_obj.judul = judul
@@ -219,8 +311,12 @@ def admin_galeri_edit(request, pk):
             else:
                 foto_obj.album = None
 
-            if foto_file:
-                foto_obj.foto = foto_file
+            if raw_foto:
+                processed_foto, err_msg = prepare_uploaded_image(raw_foto)
+                if err_msg:
+                    messages.error(request, err_msg)
+                    return render(request, 'admin_panel/galeri_edit.html', {'foto': foto_obj, 'album_list': album_list})
+                foto_obj.foto = processed_foto
 
             foto_obj.save()
             messages.success(request, f'Foto "{judul}" berhasil diperbarui!')
