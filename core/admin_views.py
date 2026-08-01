@@ -91,13 +91,13 @@ def admin_berita_tambah(request):
                 penulis=penulis, unggulan=unggulan
             )
             if gambar:
-                proc_img, _ = prepare_uploaded_image(gambar)
+                proc_img, _ = prepare_uploaded_image(gambar, subfolder='berita')
                 if proc_img:
                     berita.gambar = proc_img
                     berita.save()
             # Simpan foto-foto tambahan
             for f in request.FILES.getlist('foto_tambahan'):
-                proc_f, _ = prepare_uploaded_image(f)
+                proc_f, _ = prepare_uploaded_image(f, subfolder='berita')
                 if proc_f:
                     FotoBerita.objects.create(berita=berita, foto=proc_f)
             messages.success(request, f'Berita "{judul}" berhasil ditambahkan!')
@@ -125,13 +125,13 @@ def admin_berita_edit(request, pk):
         berita.unggulan = True
         gambar = request.FILES.get('gambar')
         if gambar:
-            proc_img, _ = prepare_uploaded_image(gambar)
+            proc_img, _ = prepare_uploaded_image(gambar, subfolder='berita')
             if proc_img:
                 berita.gambar = proc_img
         berita.save()
         # Simpan foto-foto tambahan baru
         for f in request.FILES.getlist('foto_tambahan'):
-            proc_f, _ = prepare_uploaded_image(f)
+            proc_f, _ = prepare_uploaded_image(f, subfolder='berita')
             if proc_f:
                 FotoBerita.objects.create(berita=berita, foto=proc_f)
         messages.success(request, f'Berita "{berita.judul}" berhasil diperbarui!')
@@ -194,7 +194,7 @@ from PIL import Image, ImageOps
 from django.core.files.base import ContentFile
 
 
-def prepare_uploaded_image(image_file):
+def prepare_uploaded_image(image_file, subfolder=None):
     """
     Memproses dan mengkonversi file gambar yang diupload:
     1. Sanitasi nama file (hapus spasi, &, simbol khusus).
@@ -213,7 +213,8 @@ def prepare_uploaded_image(image_file):
     if not clean_name:
         clean_name = "foto"
 
-    unique_filename = f"{clean_name[:35]}_{int(time.time())}_{uuid.uuid4().hex[:4]}.jpg"
+    prefix = f"{subfolder.strip('/')}/" if subfolder else ""
+    unique_filename = f"{prefix}{clean_name[:35]}_{int(time.time())}_{uuid.uuid4().hex[:4]}.jpg"
 
     try:
         import pillow_heif
@@ -274,7 +275,7 @@ def prepare_uploaded_image(image_file):
             if hasattr(image_file, 'seek'):
                 image_file.seek(0)
             target_ext = '.jpg' if ext in ['.heic', '.heif'] else ext
-            clean_filename = f"{clean_name[:35]}_{int(time.time())}_{uuid.uuid4().hex[:4]}{target_ext}"
+            clean_filename = f"{prefix}{clean_name[:35]}_{int(time.time())}_{uuid.uuid4().hex[:4]}{target_ext}"
             image_file.name = clean_filename
             return image_file, None
         except Exception:
