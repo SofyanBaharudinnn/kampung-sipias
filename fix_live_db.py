@@ -1,93 +1,83 @@
 import os
-import sys
 import django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kampung_sipias.settings')
 django.setup()
 
-from PIL import Image
 from berita.models import Berita, FotoBerita
-from galeri.models import FotoGaleri
-from django.core.files.base import ContentFile
+from galeri.models import FotoGaleri, AlbumGaleri
+from core.models import FotoFasilitas, ProfilKampung
 
-base_dir = os.path.dirname(os.path.abspath(__file__))
-static_img_dir = os.path.join(base_dir, 'static', 'images')
-
-def is_image_valid(file_path):
-    """Cek apakah file foto benar-benar valid dan bisa dibaca oleh Pillow (bukan file HEIC/rusak)."""
-    if not file_path or not os.path.exists(file_path):
+def fix_field(instance, field_name, expected_prefix):
+    field_val = getattr(instance, field_name)
+    if not field_val:
         return False
-    if os.path.getsize(file_path) < 100:
-        return False
-    try:
-        with Image.open(file_path) as img:
-            img.verify()
+        
+    name = field_val.name
+    # Jika path tidak dimulai dengan prefix yang diharapkan dan tidak kosong
+    if name and not name.startswith(expected_prefix) and not name.startswith('media/'):
+        old_name = name
+        new_name = f"{expected_prefix.strip('/')}/{name.lstrip('/')}"
+        
+        # Cek jika file fisik ada di media/ tetapi di database tidak ada prefixnya
+        # Pindahkan file fisik jika perlu
+        old_physical_path = os.path.join(django.conf.settings.MEDIA_ROOT, old_name)
+        new_physical_path = os.path.join(django.conf.settings.MEDIA_ROOT, new_name)
+        
+        if os.path.exists(old_physical_path):
+            os.makedirs(os.path.dirname(new_physical_path), exist_ok=True)
+            try:
+                os.rename(old_physical_path, new_physical_path)
+                print(f"Moved file: {old_name} -> {new_name}")
+            except Exception as e:
+                print(f"Error moving file: {e}")
+                
+        # Update database record
+        field_val.name = new_name
+        instance.save(update_fields=[field_name])
+        print(f"Updated DB {instance.__class__.__name__} (ID {instance.id}): {old_name} -> {new_name}")
         return True
-    except Exception:
-        return False
+    return False
 
-def fix_all_broken_images(force=False):
-    print("=== Periksa dan Perbaiki Foto Berita & Galeri di Database ===")
-    sample_images = ['gotong_royong.jpg', 'hero_bg_kampung.jpg', 'foto_udara_kampung.jpg']
+print("=" * 60)
+print("FIXING LIVE DATABASE IMAGE PATHS")
+print("=" * 60)
 
-    # 1. PERBAIKI BERITA
-    berita_list = Berita.objects.all()
-    print(f"Total berita ditemukan: {berita_list.count()}")
-    for idx, b in enumerate(berita_list):
-        is_broken = force
-        if not is_broken:
-            if not b.gambar or not b.gambar.name:
-                is_broken = True
-            else:
-                name_lower = b.gambar.name.lower()
-                if name_lower.endswith('.heic') or name_lower.endswith('.heif'):
-                    is_broken = True
-                else:
-                    try:
-                        if not is_image_valid(b.gambar.path):
-                            is_broken = True
-                    except Exception:
-                        is_broken = True
+# 1. Berita (gambar -> berita/)
+print("Fixing Berita...")
+for b in Berita.objects.all():
+    fix_field(b, 'gambar', 'berita/')
 
-        if is_broken:
-            selected_img = sample_images[idx % len(sample_images)]
-            img_path = os.path.join(static_img_dir, selected_img)
-            if os.path.exists(img_path):
-                with open(img_path, 'rb') as f:
-                    new_filename = f"berita_fixed_{b.id}_{selected_img}"
-                    b.gambar.save(new_filename, ContentFile(f.read()), save=True)
-                print(f"[OK] Foto Berita #{b.id} '{b.judul}' -> Berhasil Diperbarui: {b.gambar.name}")
+# 2. FotoBerita (foto -> berita/gallery/)
+print("Fixing FotoBerita...")
+for fb in FotoBerita.objects.all():
+    fix_field(fb, 'foto', 'berita/gallery/')
 
-    # 2. PERBAIKI GALERI
-    galeri_list = FotoGaleri.objects.all()
-    print(f"\nTotal foto galeri ditemukan: {galeri_list.count()}")
-    for idx, g in enumerate(galeri_list):
-        is_broken = force
-        if not is_broken:
-            if not g.foto or not g.foto.name:
-                is_broken = True
-            else:
-                name_lower = g.foto.name.lower()
-                if name_lower.endswith('.heic') or name_lower.endswith('.heif'):
-                    is_broken = True
-                else:
-                    try:
-                        if not is_image_valid(g.foto.path):
-                            is_broken = True
-                    except Exception:
-                        is_broken = True
+# 3. FotoGaleri (foto -> galeri/foto/)
+print("Fixing FotoGaleri...")
+for fg in FotoGaleri.objects.all():
+    fix_field(fg, 'foto', 'galeri/foto/')
 
-        if is_broken:
-            selected_img = sample_images[idx % len(sample_images)]
-            img_path = os.path.join(static_img_dir, selected_img)
-            if os.path.exists(img_path):
-                with open(img_path, 'rb') as f:
-                    new_filename = f"galeri_fixed_{g.id}_{selected_img}"
-                    g.foto.save(new_filename, ContentFile(f.read()), save=True)
-                print(f"[OK] Foto Galeri #{g.id} '{g.judul}' -> Berhasil Diperbarui: {g.foto.name}")
+# 4. AlbumGaleri (sampul -> galeri/sampul/)
+print("Fixing AlbumGaleri...")
+for alb in AlbumGaleri.objects.all():
+    fix_field(alb, 'sampul', 'galeri/sampul/')
 
-    print("\n[OK] Pembersihan database selesai!")
+# 5. FotoFasilitas (foto -> fasilitas/)
+print("Fixing FotoFasilitas...")
+for ff in FotoFasilitas.objects.all():
+    fix_field(ff, 'foto', 'fasilitas/')
 
-if __name__ == '__main__':
-    force_flag = '--force' in sys.argv or '-f' in sys.argv
-    fix_all_broken_images(force=force_flag)
+# 6. ProfilKampung
+print("Fixing ProfilKampung...")
+for pk in ProfilKampung.objects.all():
+    fix_field(pk, 'foto_kepala', 'profil/')
+    fix_field(pk, 'foto_kantor', 'profil/')
+    fix_field(pk, 'foto_fasilitas_kesehatan', 'profil/')
+    fix_field(pk, 'foto_fasilitas_pendidikan', 'profil/')
+    fix_field(pk, 'foto_fasilitas_ibadah', 'profil/')
+    fix_field(pk, 'foto_fasilitas_umum', 'profil/')
+
+print("=" * 60)
+print("Database fix completed!")
+print("=" * 60)
