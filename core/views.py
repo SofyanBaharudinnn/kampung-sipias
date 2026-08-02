@@ -170,13 +170,34 @@ def google_verification(request):
 
 
 def debug_media(request):
-    """View debug untuk mengecek ketersediaan folder & file media di PythonAnywhere"""
+    """View debug untuk mengecek database dan folder & file media di PythonAnywhere"""
     import os
     from django.conf import settings
     from django.http import HttpResponse
+    from django.db import connection
+    from berita.models import Berita
 
+    db_path = connection.settings_dict.get('NAME', 'Unknown')
     media_dir = str(settings.MEDIA_ROOT)
-    output = [f"<h3>MEDIA_ROOT: <code>{media_dir}</code></h3>", f"<p>Folder Exists: <b>{os.path.exists(media_dir)}</b></p>", "<hr><h4>DAFTAR FILE MEDIA SAAAT INI:</h4><ul>"]
+    
+    output = [
+        "<h3>DATABASE INFO</h3>",
+        f"<p>Database Path in settings: <code>{db_path}</code></p>",
+        f"<p>Database File Exists: <b>{os.path.exists(str(db_path))}</b></p>",
+        "<hr><h3>BERITA IN LIVE DB:</h3><ul>"
+    ]
+
+    try:
+        for b in Berita.objects.all().order_by('-id')[:5]:
+            img_val = b.gambar.name if b.gambar else 'None'
+            output.append(f"<li>ID: {b.id} | Slug: {b.slug} | Gambar Field: {img_val}</li>")
+    except Exception as db_err:
+        output.append(f"<li>Error querying database: {db_err}</li>")
+
+    output.append("</ul><hr><h3>MEDIA_ROOT INFO</h3>")
+    output.append(f"<p>MEDIA_ROOT Path: <code>{media_dir}</code></p>")
+    output.append(f"<p>Folder Exists: <b>{os.path.exists(media_dir)}</b></p>")
+    output.append("<hr><h4>DAFTAR FILE MEDIA SAAT INI:</h4><ul>")
 
     if os.path.exists(media_dir):
         count = 0
