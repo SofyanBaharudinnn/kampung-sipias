@@ -5,6 +5,13 @@ from PIL import Image
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kampung_sipias.settings')
 django.setup()
 
+try:
+    import pillow_heif
+    pillow_heif.register_heif_opener()
+    print("--> pillow-heif successfully registered for compression.")
+except Exception:
+    pass
+
 from berita.models import Berita, FotoBerita
 from galeri.models import FotoGaleri
 
