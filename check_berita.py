@@ -1,15 +1,29 @@
 import os
+import stat
 import django
+from PIL import Image
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kampung_sipias.settings')
 django.setup()
 
-from berita.models import Berita, FotoBerita
-from PIL import Image
+from berita.models import Berita
 
 print("=" * 60)
 print("DIAGNOSTIK GAMBAR BERITA")
 print("=" * 60)
+
+def get_file_info(path):
+    if not os.path.exists(path):
+        return "Not found"
+    try:
+        info = os.stat(path)
+        mode = info.st_mode
+        perms = stat.filemode(mode)
+        uid = info.st_uid
+        gid = info.st_gid
+        return f"Perms: {perms} | UID: {uid} | GID: {gid} | Size: {info.st_size / (1024*1024):.2f} MB"
+    except Exception as e:
+        return f"Error: {e}"
 
 all_berita = Berita.objects.all().order_by('-id')[:5]
 for b in all_berita:
@@ -22,11 +36,8 @@ for b in all_berita:
         try:
             path = b.gambar.path
             print(f"  Path:           {path}")
-            exists = os.path.exists(path)
-            print(f"  Exists on Disk: {exists}")
-            if exists:
-                size_mb = os.path.getsize(path) / (1024*1024)
-                print(f"  Size:           {size_mb:.2f} MB")
+            print(f"  File Info:      {get_file_info(path)}")
+            if os.path.exists(path):
                 try:
                     with Image.open(path) as img:
                         img.verify()
@@ -37,23 +48,6 @@ for b in all_berita:
             print(f"  Path Error:     {e}")
     else:
         print("  Database Field: None/Kosong")
-        
-    # Cek foto tambahan
-    fotos = b.foto_tambahan.all()
-    print(f"  Foto Tambahan ({fotos.count()} file):")
-    for idx, f in enumerate(fotos):
-        print(f"    - Foto #{idx+1}: {f.foto.name}")
-        try:
-            fpath = f.foto.path
-            print(f"      Exists on Disk: {os.path.exists(fpath)}")
-            if os.path.exists(fpath):
-                try:
-                    with Image.open(fpath) as img:
-                        img.verify()
-                    print("      Pillow Verify:  VALID")
-                except Exception as img_err:
-                    print(f"      Pillow Verify:  CORRUPTED ({img_err})")
-        except Exception as e:
-            print(f"      Path Error:     {e}")
     print("-" * 60)
+
 
