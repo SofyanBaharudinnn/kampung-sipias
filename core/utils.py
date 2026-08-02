@@ -53,10 +53,27 @@ def process_uploaded_images(sender, instance, **kwargs):
     if sender._meta.app_label in ['contenttypes', 'auth', 'sessions', 'admin']:
         return
 
+    update_fields = kwargs.get('update_fields')
+
     for field in instance._meta.fields:
         if isinstance(field, ImageField):
+            # Jika update_fields diset dan field gambar ini tidak ada di dalamnya, lewati
+            if update_fields and field.name not in update_fields:
+                continue
+
             image_file = getattr(instance, field.name, None)
             if image_file and hasattr(image_file, 'file') and image_file.name:
+                # Cek apakah gambar benar-benar berubah dari database
+                if instance.pk:
+                    try:
+                        # Gunakan base manager agar menghindari bentrok/query rekursif
+                        old_instance = sender._base_manager.get(pk=instance.pk)
+                        old_image = getattr(old_instance, field.name, None)
+                        if old_image and old_image.name == image_file.name:
+                            continue
+                    except Exception:
+                        pass
+
                 # Reset stream pointer
                 try:
                     if hasattr(image_file, 'seek'):
