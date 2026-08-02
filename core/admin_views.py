@@ -213,8 +213,7 @@ def prepare_uploaded_image(image_file, subfolder=None):
     if not clean_name:
         clean_name = "foto"
 
-    prefix = f"{subfolder.strip('/')}/" if subfolder else ""
-    unique_filename = f"{prefix}{clean_name[:35]}_{int(time.time())}_{uuid.uuid4().hex[:4]}.jpg"
+    unique_filename = f"{clean_name[:35]}_{int(time.time())}_{uuid.uuid4().hex[:4]}.jpg"
 
     try:
         import pillow_heif

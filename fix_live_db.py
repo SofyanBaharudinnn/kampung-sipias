@@ -14,13 +14,24 @@ def fix_field(instance, field_name, expected_prefix):
         return False
         
     name = field_val.name
-    # Jika path tidak dimulai dengan prefix yang diharapkan dan tidak kosong
-    if name and not name.startswith(expected_prefix) and not name.startswith('media/'):
-        old_name = name
-        new_name = f"{expected_prefix.strip('/')}/{name.lstrip('/')}"
+    if not name:
+        return False
+
+    old_name = name
+    new_name = name
+    
+    # 1. Bersihkan prefix ganda seperti 'berita/berita/'
+    expected_folder = expected_prefix.strip('/')
+    double_prefix = f"{expected_folder}/{expected_folder}/"
+    if name.startswith(double_prefix):
+        new_name = name[len(expected_folder)+1:]
         
-        # Cek jika file fisik ada di media/ tetapi di database tidak ada prefixnya
-        # Pindahkan file fisik jika perlu
+    # 2. Tambahkan prefix jika tidak ada
+    elif not name.startswith(expected_prefix) and not name.startswith('media/'):
+        new_name = f"{expected_folder}/{name.lstrip('/')}"
+
+    # Jika ada perubahan
+    if new_name != old_name:
         old_physical_path = os.path.join(django.conf.settings.MEDIA_ROOT, old_name)
         new_physical_path = os.path.join(django.conf.settings.MEDIA_ROOT, new_name)
         
