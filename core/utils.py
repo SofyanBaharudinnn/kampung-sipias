@@ -113,9 +113,18 @@ def process_uploaded_images(sender, instance, **kwargs):
                     elif img.mode != 'RGB':
                         img = img.convert('RGB')
 
-                    # Simpan sebagai JPEG berkualitas tinggi
+                    # Resize gambar jika dimensi melebihi 1200px (mencegah disk quota exceeded)
+                    max_dim = 1200
+                    if img.width > max_dim or img.height > max_dim:
+                        try:
+                            resample_filter = getattr(Image, 'Resampling', Image).LANCZOS
+                        except AttributeError:
+                            resample_filter = getattr(Image, 'ANTIALIAS', Image.BICUBIC)
+                        img.thumbnail((max_dim, max_dim), resample_filter)
+
+                    # Simpan sebagai JPEG terkompresi
                     buffer = BytesIO()
-                    img.save(buffer, format='JPEG', quality=88, optimize=True)
+                    img.save(buffer, format='JPEG', quality=80, optimize=True)
                     buffer.seek(0)
 
                     new_name = sanitize_filename(filename, forced_ext='.jpg')
