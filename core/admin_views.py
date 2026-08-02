@@ -263,8 +263,17 @@ def prepare_uploaded_image(image_file, subfolder=None):
         elif img.mode != 'RGB':
             img = img.convert('RGB')
 
+        # Resize image if dimensions exceed 1200px (mencegah disk quota exceeded)
+        max_dim = 1200
+        if img.width > max_dim or img.height > max_dim:
+            try:
+                resample_filter = getattr(Image, 'Resampling', Image).LANCZOS
+            except AttributeError:
+                resample_filter = getattr(Image, 'ANTIALIAS', Image.BICUBIC)
+            img.thumbnail((max_dim, max_dim), resample_filter)
+
         buffer = BytesIO()
-        img.save(buffer, format='JPEG', quality=88, optimize=True)
+        img.save(buffer, format='JPEG', quality=80, optimize=True)
         buffer.seek(0)
 
         return ContentFile(buffer.getvalue(), name=unique_filename), None
