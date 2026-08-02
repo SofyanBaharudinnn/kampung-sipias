@@ -75,3 +75,23 @@ for fg in FotoGaleri.objects.all():
 print("=" * 60)
 print("Finished compressing all images!")
 print("=" * 60)
+
+# Auto-touch WSGI file to reload PythonAnywhere web app
+print("Reloading Web App...")
+wsgi_dir = '/var/www'
+reloaded = False
+if os.path.exists(wsgi_dir):
+    for f in os.listdir(wsgi_dir):
+        if f.endswith('_wsgi.py'):
+            wsgi_path = os.path.join(wsgi_dir, f)
+            try:
+                os.utime(wsgi_path, None)
+                print(f"--> Touched WSGI file: {wsgi_path} (Server Reloaded!)")
+                reloaded = True
+            except Exception as e:
+                print(f"Error touching WSGI file: {e}")
+
+if not reloaded:
+    print("WSGI file not found or couldn't be touched. Please reload manually in PythonAnywhere Web Tab.")
+print("=" * 60)
+
