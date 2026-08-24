@@ -2,7 +2,6 @@ name: Auto Extend PythonAnywhere Hosting
 
 on:
   schedule:
-    # Berjalan otomatis setiap tanggal 1 dan 15 setiap bulan jam 00:00 UTC
     - cron: '0 0 1,15 * *'
   workflow_dispatch:
 
@@ -10,88 +9,81 @@ jobs:
   extend-webapp:
     runs-on: ubuntu-latest
     steps:
-      - name: Extend PythonAnywhere Expiry Date
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Playwright
+        run: |
+          pip install playwright
+          playwright install chromium --with-deps
+
+      - name: Extend PythonAnywhere via Browser
         env:
           PA_USERNAME: ${{ secrets.PA_USERNAME }}
           PA_PASSWORD: ${{ secrets.PA_PASSWORD }}
         run: |
-          python3 << 'EOF'
-          import requests
+          python3 << 'SCRIPT'
           import os
-          import re
-          import sys
+          from playwright.sync_api import sync_playwright
 
           username = os.environ['PA_USERNAME']
           password = os.environ['PA_PASSWORD']
-          domain = f"{username}.pythonanywhere.com"
 
-          session = requests.Session()
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              page = browser.new_page()
 
-          # Step 1: Get login page and CSRF token
-          print("=== Step 1: Getting login page ===")
-          login_page = session.get("https://www.pythonanywhere.com/login/")
-          csrf_token = session.cookies.get('csrftoken')
-          print(f"CSRF token obtained: {'Yes' if csrf_token else 'No'}")
+              # Step 1: Login
+              print("=== Step 1: Opening login page ===")
+              page.goto("https://www.pythonanywhere.com/login/")
+              page.wait_for_load_state("networkidle")
 
-          # Step 2: Login
-          print("=== Step 2: Logging in ===")
-          login_response = session.post(
-              "https://www.pythonanywhere.com/login/",
-              data={
-                  "csrfmiddlewaretoken": csrf_token,
-                  "auth-username": username,
-                  "auth-password": password,
-                  "login_view-current_step": "auth",
-              },
-              headers={
-                  "Referer": "https://www.pythonanywhere.com/login/",
-              },
-          )
-          
-          if username.lower() in login_response.url.lower() or "dashboard" in login_response.url.lower():
-              print(f"Login successful! Redirected to: {login_response.url}")
-          else:
-              print(f"Login might have failed. URL: {login_response.url}")
-              print(f"Status: {login_response.status_code}")
+              print("=== Step 2: Filling login form ===")
+              page.fill('input[name="auth-username"]', username)
+              page.fill('input[name="auth-password"]', password)
+              page.click('button[type="submit"]')
+              page.wait_for_load_state("networkidle")
 
-          # Step 3: Get webapp page and new CSRF token
-          print("=== Step 3: Getting webapp page ===")
-          webapp_url = f"https://www.pythonanywhere.com/user/{username}/webapps/"
-          webapp_page = session.get(webapp_url)
-          csrf_token = session.cookies.get('csrftoken')
-          print(f"Webapp page status: {webapp_page.status_code}")
+              current_url = page.url
+              print(f"After login URL: {current_url}")
 
-          # Step 4: Extend the webapp
-          print("=== Step 4: Extending webapp ===")
-          extend_url = f"https://www.pythonanywhere.com/user/{username}/webapps/{domain}/extend/"
-          extend_response = session.post(
-              extend_url,
-              data={"csrfmiddlewaretoken": csrf_token},
-              headers={
-                  "Referer": webapp_url,
-                  "X-CSRFToken": csrf_token,
-              },
-          )
-          print(f"Extend status: {extend_response.status_code}")
-          
-          if extend_response.status_code == 200:
-              print("SUCCESS! Webapp expiry extended!")
-              # Check for new expiry date in response
-              expiry_match = re.search(r'disabled on\s+(.+?)[\s<]', extend_response.text)
-              if expiry_match:
-                  print(f"New expiry date: {expiry_match.group(1)}")
-          else:
-              print(f"Failed with status: {extend_response.status_code}")
-              print(f"Response URL: {extend_response.url}")
+              if "login" in current_url.lower():
+                  print("ERROR: Login failed! Check PA_USERNAME and PA_PASSWORD secrets.")
+                  browser.close()
+                  exit(1)
 
-          # Step 5: Verify via API
-          print("=== Step 5: Verifying via API ===")
-          api_url = f"https://www.pythonanywhere.com/api/v0/user/{username}/webapps/"
-          api_token = os.environ.get('PA_API_TOKEN', '')
-          if api_token:
-              verify = requests.get(api_url, headers={"Authorization": f"Token {api_token}"})
-              if verify.status_code == 200:
-                  data = verify.json()
-                  for app in data:
-                      print(f"Domain: {app['domain_name']}, Expiry: {app.get('expiry', 'N/A')}")
-          EOF
+              print("Login successful!")
+
+              # Step 2: Go to Web tab
+              print("=== Step 3: Navigating to Web tab ===")
+              page.goto(f"https://www.pythonanywhere.com/user/{username}/webapps/")
+              page.wait_for_load_state("networkidle")
+
+              # Step 3: Click extend button
+              print("=== Step 4: Looking for extend button ===")
+              extend_button = page.locator('button:has-text("Run until"), input[value*="Run until"], a:has-text("Run until")')
+              
+              if extend_button.count() > 0:
+                  print(f"Found extend button: {extend_button.first.text_content()}")
+                  extend_button.first.click()
+                  page.wait_for_load_state("networkidle")
+                  print("SUCCESS! Clicked extend button!")
+
+                  # Check new expiry
+                  page.wait_for_timeout(2000)
+                  content = page.content()
+                  if "disabled on" in content:
+                      import re
+                      match = re.search(r'disabled on\s+<[^>]+>([^<]+)', content)
+                      if not match:
+                          match = re.search(r'disabled on\s+(.+?)[\n<]', content)
+                      if match:
+                          print(f"New expiry date: {match.group(1).strip()}")
+              else:
+                  print("Could not find extend button. Page content preview:")
+                  print(page.content()[:2000])
+
+              browser.close()
+          SCRIPT
