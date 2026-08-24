@@ -4,31 +4,94 @@ on:
   schedule:
     # Berjalan otomatis setiap tanggal 1 dan 15 setiap bulan jam 00:00 UTC
     - cron: '0 0 1,15 * *'
-  workflow_dispatch: # Mengizinkan pengujian manual melalui tombol "Run workflow" di GitHub
+  workflow_dispatch:
 
 jobs:
   extend-webapp:
     runs-on: ubuntu-latest
     steps:
       - name: Extend PythonAnywhere Expiry Date
+        env:
+          PA_USERNAME: ${{ secrets.PA_USERNAME }}
+          PA_PASSWORD: ${{ secrets.PA_PASSWORD }}
         run: |
-          echo "=== Trying lowercase domain ==="
-          RESPONSE=$(curl -s -o response1.txt -w "%{http_code}" -X POST \
-            "https://www.pythonanywhere.com/api/v0/user/KampungSipias/webapps/kampungsipias.pythonanywhere.com/extend/" \
-            -H "Authorization: Token ${{ secrets.PA_API_TOKEN }}")
-          echo "HTTP Status: $RESPONSE"
-          echo "Response body:" && cat response1.txt && echo ""
+          python3 << 'EOF'
+          import requests
+          import os
+          import re
+          import sys
 
-          if [ "$RESPONSE" != "200" ]; then
-            echo "=== Trying mixed-case domain ==="
-            RESPONSE2=$(curl -s -o response2.txt -w "%{http_code}" -X POST \
-              "https://www.pythonanywhere.com/api/v0/user/KampungSipias/webapps/KampungSipias.pythonanywhere.com/extend/" \
-              -H "Authorization: Token ${{ secrets.PA_API_TOKEN }}")
-            echo "HTTP Status: $RESPONSE2"
-            echo "Response body:" && cat response2.txt && echo ""
-          fi
+          username = os.environ['PA_USERNAME']
+          password = os.environ['PA_PASSWORD']
+          domain = f"{username}.pythonanywhere.com"
 
-          echo "=== Checking current webapp info ==="
-          curl -s \
-            "https://www.pythonanywhere.com/api/v0/user/KampungSipias/webapps/" \
-            -H "Authorization: Token ${{ secrets.PA_API_TOKEN }}"
+          session = requests.Session()
+
+          # Step 1: Get login page and CSRF token
+          print("=== Step 1: Getting login page ===")
+          login_page = session.get("https://www.pythonanywhere.com/login/")
+          csrf_token = session.cookies.get('csrftoken')
+          print(f"CSRF token obtained: {'Yes' if csrf_token else 'No'}")
+
+          # Step 2: Login
+          print("=== Step 2: Logging in ===")
+          login_response = session.post(
+              "https://www.pythonanywhere.com/login/",
+              data={
+                  "csrfmiddlewaretoken": csrf_token,
+                  "auth-username": username,
+                  "auth-password": password,
+                  "login_view-current_step": "auth",
+              },
+              headers={
+                  "Referer": "https://www.pythonanywhere.com/login/",
+              },
+          )
+          
+          if username.lower() in login_response.url.lower() or "dashboard" in login_response.url.lower():
+              print(f"Login successful! Redirected to: {login_response.url}")
+          else:
+              print(f"Login might have failed. URL: {login_response.url}")
+              print(f"Status: {login_response.status_code}")
+
+          # Step 3: Get webapp page and new CSRF token
+          print("=== Step 3: Getting webapp page ===")
+          webapp_url = f"https://www.pythonanywhere.com/user/{username}/webapps/"
+          webapp_page = session.get(webapp_url)
+          csrf_token = session.cookies.get('csrftoken')
+          print(f"Webapp page status: {webapp_page.status_code}")
+
+          # Step 4: Extend the webapp
+          print("=== Step 4: Extending webapp ===")
+          extend_url = f"https://www.pythonanywhere.com/user/{username}/webapps/{domain}/extend/"
+          extend_response = session.post(
+              extend_url,
+              data={"csrfmiddlewaretoken": csrf_token},
+              headers={
+                  "Referer": webapp_url,
+                  "X-CSRFToken": csrf_token,
+              },
+          )
+          print(f"Extend status: {extend_response.status_code}")
+          
+          if extend_response.status_code == 200:
+              print("SUCCESS! Webapp expiry extended!")
+              # Check for new expiry date in response
+              expiry_match = re.search(r'disabled on\s+(.+?)[\s<]', extend_response.text)
+              if expiry_match:
+                  print(f"New expiry date: {expiry_match.group(1)}")
+          else:
+              print(f"Failed with status: {extend_response.status_code}")
+              print(f"Response URL: {extend_response.url}")
+
+          # Step 5: Verify via API
+          print("=== Step 5: Verifying via API ===")
+          api_url = f"https://www.pythonanywhere.com/api/v0/user/{username}/webapps/"
+          api_token = os.environ.get('PA_API_TOKEN', '')
+          if api_token:
+              verify = requests.get(api_url, headers={"Authorization": f"Token {api_token}"})
+              if verify.status_code == 200:
+                  data = verify.json()
+                  for app in data:
+                      print(f"Domain: {app['domain_name']}, Expiry: {app.get('expiry', 'N/A')}")
+          EOF
