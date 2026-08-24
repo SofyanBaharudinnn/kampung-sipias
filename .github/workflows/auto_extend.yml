@@ -1,0 +1,17 @@
+name: Auto Extend PythonAnywhere Hosting
+
+on:
+  schedule:
+    # Berjalan otomatis setiap tanggal 1 dan 15 setiap bulan jam 00:00 UTC
+    - cron: '0 0 1,15 * *'
+  workflow_dispatch: # Mengizinkan pengujian manual melalui tombol "Run workflow" di GitHub
+
+jobs:
+  extend-webapp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extend PythonAnywhere Expiry Date
+        run: |
+          RESPONSE=$(curl -s -w "%{http_code}" -X POST https://www.pythonanywhere.com/api/v0/user/KampungSipias/webapps/KampungSipias.pythonanywhere.com/extend/ \
+            -H "Authorization: Token ${{ secrets.PA_API_TOKEN }}")
+          echo "Response code: $RESPONSE"
