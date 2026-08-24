@@ -144,34 +144,13 @@ def process_uploaded_images(sender, instance, **kwargs):
                     img.save(buffer, format='JPEG', quality=80, optimize=True)
                     buffer.seek(0)
 
-                    # Dapatkan folder upload_to agar file disimpan di folder subdirektori yang benar
-                    upload_to = field.upload_to
-                    if callable(upload_to):
-                        try:
-                            upload_to = upload_to(instance, filename)
-                        except Exception:
-                            upload_to = ""
-                    
                     new_name = sanitize_filename(filename, forced_ext='.jpg')
-                    upload_to_str = str(upload_to).strip('/')
-                    if upload_to_str:
-                        new_name = f"{upload_to_str}/{new_name}"
-
                     setattr(instance, field.name, ContentFile(buffer.getvalue(), name=new_name))
 
                 except Exception as e:
                     print(f"[Image Conversion Exception] {filename}: {e}")
-                    # Jika gagal, tetap gunakan sanitize dengan subfolder
-                    upload_to = field.upload_to
-                    if callable(upload_to):
-                        try:
-                            upload_to = upload_to(instance, filename)
-                        except Exception:
-                            upload_to = ""
+                    # Jika gagal, tetap gunakan sanitize
                     new_name = sanitize_filename(filename)
-                    upload_to_str = str(upload_to).strip('/')
-                    if upload_to_str:
-                        new_name = f"{upload_to_str}/{new_name}"
                     image_file.name = new_name
                     if hasattr(image_file, 'seek'):
                         try:
