@@ -12,6 +12,23 @@ jobs:
     steps:
       - name: Extend PythonAnywhere Expiry Date
         run: |
-          RESPONSE=$(curl -s -w "%{http_code}" -X POST https://www.pythonanywhere.com/api/v0/user/KampungSipias/webapps/KampungSipias.pythonanywhere.com/extend/ \
+          echo "=== Trying lowercase domain ==="
+          RESPONSE=$(curl -s -o response1.txt -w "%{http_code}" -X POST \
+            "https://www.pythonanywhere.com/api/v0/user/KampungSipias/webapps/kampungsipias.pythonanywhere.com/extend/" \
             -H "Authorization: Token ${{ secrets.PA_API_TOKEN }}")
-          echo "Response code: $RESPONSE"
+          echo "HTTP Status: $RESPONSE"
+          echo "Response body:" && cat response1.txt && echo ""
+
+          if [ "$RESPONSE" != "200" ]; then
+            echo "=== Trying mixed-case domain ==="
+            RESPONSE2=$(curl -s -o response2.txt -w "%{http_code}" -X POST \
+              "https://www.pythonanywhere.com/api/v0/user/KampungSipias/webapps/KampungSipias.pythonanywhere.com/extend/" \
+              -H "Authorization: Token ${{ secrets.PA_API_TOKEN }}")
+            echo "HTTP Status: $RESPONSE2"
+            echo "Response body:" && cat response2.txt && echo ""
+          fi
+
+          echo "=== Checking current webapp info ==="
+          curl -s \
+            "https://www.pythonanywhere.com/api/v0/user/KampungSipias/webapps/" \
+            -H "Authorization: Token ${{ secrets.PA_API_TOKEN }}"
