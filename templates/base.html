@@ -3,9 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Website resmi Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan.">
+  <meta name="description" content="{% block meta_description %}Website resmi Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan. Informasi profil, berita, dan kegiatan kampung.{% endblock %}">
+  <meta name="keywords" content="Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan, desa, kampung, pemerintahan kampung">
+  <meta name="author" content="Pemerintah Kampung Sipias">
+  <link rel="canonical" href="{% block canonical_url %}https://kampungsipias.pythonanywhere.com/{% endblock %}">
   <title>{% block title %}{{ page_title }} — Kampung Sipias{% endblock %}</title>
   {% load static %}
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}{{ page_title }} — Kampung Sipias{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Website resmi Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan.{% endblock %}">
+  <meta property="og:url" content="{% block og_url %}https://kampungsipias.pythonanywhere.com/{% endblock %}">
+  <meta property="og:site_name" content="Kampung Sipias">
+  <meta property="og:locale" content="id_ID">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{% block twitter_title %}{{ page_title }} — Kampung Sipias{% endblock %}">
+  <meta name="twitter:description" content="{% block twitter_description %}Website resmi Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan.{% endblock %}">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">

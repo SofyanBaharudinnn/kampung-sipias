@@ -140,25 +140,48 @@ def robots_txt(request):
 
 
 def sitemap_xml(request):
-    """View untuk sitemap XML agar Google mudah mengindeks semua halaman"""
+    """View untuk sitemap XML dinamis agar Google mudah mengindeks semua halaman"""
     from django.http import HttpResponse
+    from django.utils import timezone
     domain = "https://kampungsipias.pythonanywhere.com"
-    urls = [
-        "",
-        "/profil/",
-        "/sejarah/",
-        "/visi-misi/",
-        "/peta/",
-        "/fasilitas/",
-        "/pemerintahan/",
-        "/kontak/",
-        "/berita/",
-        "/galeri/",
+    today = timezone.now().strftime('%Y-%m-%d')
+
+    # Halaman statis
+    static_pages = [
+        {"loc": "", "priority": "1.0", "changefreq": "daily"},
+        {"loc": "/profil/", "priority": "0.8", "changefreq": "monthly"},
+        {"loc": "/sejarah/", "priority": "0.8", "changefreq": "monthly"},
+        {"loc": "/visi-misi/", "priority": "0.7", "changefreq": "monthly"},
+        {"loc": "/peta/", "priority": "0.7", "changefreq": "monthly"},
+        {"loc": "/fasilitas/", "priority": "0.8", "changefreq": "monthly"},
+        {"loc": "/pemerintahan/", "priority": "0.8", "changefreq": "monthly"},
+        {"loc": "/kontak/", "priority": "0.6", "changefreq": "monthly"},
+        {"loc": "/berita/", "priority": "0.9", "changefreq": "daily"},
+        {"loc": "/galeri/", "priority": "0.7", "changefreq": "weekly"},
     ]
+
     xml = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
-    for u in urls:
-        xml.append(f'  <url><loc>{domain}{u}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
+
+    for page in static_pages:
+        xml.append(f'  <url>')
+        xml.append(f'    <loc>{domain}{page["loc"]}</loc>')
+        xml.append(f'    <lastmod>{today}</lastmod>')
+        xml.append(f'    <changefreq>{page["changefreq"]}</changefreq>')
+        xml.append(f'    <priority>{page["priority"]}</priority>')
+        xml.append(f'  </url>')
+
+    # Halaman berita dinamis
+    berita_list = Berita.objects.filter(status='published').order_by('-tanggal_publish')
+    for berita in berita_list:
+        lastmod = berita.tanggal_update.strftime('%Y-%m-%d') if berita.tanggal_update else today
+        xml.append(f'  <url>')
+        xml.append(f'    <loc>{domain}/berita/{berita.slug}/</loc>')
+        xml.append(f'    <lastmod>{lastmod}</lastmod>')
+        xml.append(f'    <changefreq>weekly</changefreq>')
+        xml.append(f'    <priority>0.7</priority>')
+        xml.append(f'  </url>')
+
     xml.append('</urlset>')
     return HttpResponse("\n".join(xml), content_type="application/xml")
 
