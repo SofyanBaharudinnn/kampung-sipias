@@ -6,6 +6,8 @@
   <meta name="description" content="{% block meta_description %}Website resmi Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan. Informasi profil, berita, dan kegiatan kampung.{% endblock %}">
   <meta name="keywords" content="Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan, desa, kampung, pemerintahan kampung">
   <meta name="author" content="Pemerintah Kampung Sipias">
+  <!-- Google Search Console Verification (meta tag backup) -->
+  <meta name="google-site-verification" content="d34dee6d910c2bc4">
   <link rel="canonical" href="{% block canonical_url %}https://kampungsipias.pythonanywhere.com/{% endblock %}">
   <title>{% block title %}{{ page_title }} — Kampung Sipias{% endblock %}</title>
   {% load static %}
@@ -17,11 +19,16 @@
   <meta property="og:url" content="{% block og_url %}https://kampungsipias.pythonanywhere.com/{% endblock %}">
   <meta property="og:site_name" content="Kampung Sipias">
   <meta property="og:locale" content="id_ID">
+  <meta property="og:image" content="{% block og_image %}{% static 'images/foto_udara_kampung.jpg' %}{% endblock %}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Kampung Sipias - Distrik Elikobel, Merauke, Papua Selatan">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="{% block twitter_title %}{{ page_title }} — Kampung Sipias{% endblock %}">
   <meta name="twitter:description" content="{% block twitter_description %}Website resmi Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan.{% endblock %}">
+  <meta name="twitter:image" content="{% block twitter_image %}{% static 'images/foto_udara_kampung.jpg' %}{% endblock %}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,6 +41,48 @@
   <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
   <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
   {% block extra_css %}{% endblock %}
+
+  <!-- JSON-LD Structured Data: Organization + WebSite -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "GovernmentOrganization",
+    "name": "Pemerintah Kampung Sipias",
+    "alternateName": "Kampung Sipias",
+    "url": "https://kampungsipias.pythonanywhere.com",
+    "logo": "https://kampungsipias.pythonanywhere.com/static/images/logo_sipias.png",
+    "image": "https://kampungsipias.pythonanywhere.com/static/images/foto_udara_kampung.jpg",
+    "description": "Website resmi Pemerintah Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Provinsi Papua Selatan.",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Kampung Sipias, Distrik Elikobel",
+      "addressLocality": "Merauke",
+      "addressRegion": "Papua Selatan",
+      "postalCode": "99633",
+      "addressCountry": "ID"
+    },
+    "email": "kampungsipias@gmail.com",
+    "areaServed": {
+      "@type": "AdministrativeArea",
+      "name": "Kampung Sipias, Distrik Elikobel, Kabupaten Merauke"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Kampung Sipias",
+    "url": "https://kampungsipias.pythonanywhere.com",
+    "description": "Website resmi Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan.",
+    "publisher": {
+      "@type": "GovernmentOrganization",
+      "name": "Pemerintah Kampung Sipias"
+    },
+    "inLanguage": "id"
+  }
+  </script>
+  {% block extra_structured_data %}{% endblock %}
 </head>
 <body>
 
