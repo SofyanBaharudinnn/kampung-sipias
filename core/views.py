@@ -134,7 +134,7 @@ def robots_txt(request):
         "Disallow: /admin-panel/",
         "Disallow: /django-admin/",
         "Allow: /",
-        "Sitemap: https://kampungsipias.pythonanywhere.com/sitemap.xml",
+        "Sitemap: https://kampungsipias.my.id/sitemap.xml",
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain")
 
@@ -143,7 +143,7 @@ def sitemap_xml(request):
     """View untuk sitemap XML dinamis agar Google mudah mengindeks semua halaman"""
     from django.http import HttpResponse
     from django.utils import timezone
-    domain = "https://kampungsipias.pythonanywhere.com"
+    domain = "https://kampungsipias.my.id"
     today = timezone.now().strftime('%Y-%m-%d')
 
     # Halaman statis

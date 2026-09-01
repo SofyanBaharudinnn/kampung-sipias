@@ -21,7 +21,7 @@ def breadcrumb_context(request):
     Membantu Google menampilkan breadcrumb di hasil pencarian.
     """
     import json
-    domain = "https://kampungsipias.pythonanywhere.com"
+    domain = "https://kampungsipias.my.id"
     path = request.path
 
     # Mapping path ke label yang SEO-friendly
