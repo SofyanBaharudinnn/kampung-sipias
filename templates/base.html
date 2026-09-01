@@ -6,6 +6,8 @@
   <meta name="description" content="{% block meta_description %}Website resmi Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan. Informasi profil, berita, dan kegiatan kampung.{% endblock %}">
   <meta name="keywords" content="Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan, desa, kampung, pemerintahan kampung">
   <meta name="author" content="Pemerintah Kampung Sipias">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="googlebot" content="index, follow">
   <!-- Google Search Console Verification (meta tag backup) -->
   <meta name="google-site-verification" content="d34dee6d910c2bc4">
   <link rel="canonical" href="{% block canonical_url %}https://kampungsipias.pythonanywhere.com/{% endblock %}">
@@ -19,7 +21,7 @@
   <meta property="og:url" content="{% block og_url %}https://kampungsipias.pythonanywhere.com/{% endblock %}">
   <meta property="og:site_name" content="Kampung Sipias">
   <meta property="og:locale" content="id_ID">
-  <meta property="og:image" content="{% block og_image %}{% static 'images/foto_udara_kampung.jpg' %}{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}https://kampungsipias.pythonanywhere.com{% static 'images/foto_udara_kampung.jpg' %}{% endblock %}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Kampung Sipias - Distrik Elikobel, Merauke, Papua Selatan">
@@ -28,7 +30,7 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="{% block twitter_title %}{{ page_title }} — Kampung Sipias{% endblock %}">
   <meta name="twitter:description" content="{% block twitter_description %}Website resmi Kampung Sipias, Distrik Elikobel, Kabupaten Merauke, Papua Selatan.{% endblock %}">
-  <meta name="twitter:image" content="{% block twitter_image %}{% static 'images/foto_udara_kampung.jpg' %}{% endblock %}">
+  <meta name="twitter:image" content="{% block twitter_image %}https://kampungsipias.pythonanywhere.com{% static 'images/foto_udara_kampung.jpg' %}{% endblock %}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -82,6 +84,13 @@
     "inLanguage": "id"
   }
   </script>
+  {% block breadcrumb_structured_data %}
+  {% if breadcrumb_jsonld %}
+  <script type="application/ld+json">
+  {{ breadcrumb_jsonld|safe }}
+  </script>
+  {% endif %}
+  {% endblock %}
   {% block extra_structured_data %}{% endblock %}
 </head>
 <body>

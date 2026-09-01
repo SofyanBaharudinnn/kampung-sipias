@@ -42,6 +42,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.SEORobotsMiddleware',
 ]
 
 ROOT_URLCONF = 'kampung_sipias.urls'
@@ -58,6 +59,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.profil_context',
+                'core.context_processors.breadcrumb_context',
             ],
         },
     },

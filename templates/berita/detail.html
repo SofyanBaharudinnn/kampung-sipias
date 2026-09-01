@@ -14,6 +14,34 @@
 {% block twitter_description %}{{ berita.ringkasan|default:berita.judul }}{% endblock %}
 {% block twitter_image %}{% if berita.gambar %}{{ berita.gambar.url }}{% else %}{% static 'images/foto_udara_kampung.jpg' %}{% endif %}{% endblock %}
 
+{% block breadcrumb_structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "https://kampungsipias.pythonanywhere.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Berita",
+      "item": "https://kampungsipias.pythonanywhere.com/berita/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "{{ berita.judul|truncatewords:8 }}"
+    }
+  ]
+}
+</script>
+{% endblock %}
+
 {% block extra_structured_data %}
 <script type="application/ld+json">
 {
@@ -43,31 +71,6 @@
   },
   "articleSection": "{{ berita.get_jenis_display }}",
   "inLanguage": "id"
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Beranda",
-      "item": "https://kampungsipias.pythonanywhere.com/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 2,
-      "name": "Berita",
-      "item": "https://kampungsipias.pythonanywhere.com/berita/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
-      "name": "{{ berita.judul|truncatewords:8 }}"
-    }
-  ]
 }
 </script>
 {% endblock %}
