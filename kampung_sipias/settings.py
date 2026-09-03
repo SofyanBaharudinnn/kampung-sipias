@@ -17,6 +17,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://kampungsipias.my.id',
+    'https://www.kampungsipias.my.id',
+    'http://kampungsipias.my.id',
+    'http://www.kampungsipias.my.id',
+    'https://kampungsipias.pythonanywhere.com',
+]
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
